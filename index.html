@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>交通标志题库入口</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0f19;
+    --panel: #161f30;
+    --panel-2: #111827;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-2: #1d4ed8;
+    --ok: #10b981;
+    --warn: #f59e0b;
+    --border: #23354f;
+    --shadow: 0 18px 60px -20px rgba(0, 0, 0, 0.8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.10), transparent 30%),
+      var(--bg);
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+
+  .shell {
+    width: min(920px, 100%);
+    display: grid;
+    gap: 18px;
+  }
+
+  .hero, .card {
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(22, 31, 48, 0.95), rgba(17, 24, 39, 0.92));
+    box-shadow: var(--shadow);
+    border-radius: 20px;
+  }
+
+  .hero {
+    padding: 28px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    background: rgba(59, 130, 246, 0.10);
+    color: #93c5fd;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  h1 {
+    margin: 14px 0 10px;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.1;
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 760px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    padding: 22px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .card h2 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    width: fit-content;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .badge.ok {
+    color: #86efac;
+    border-color: rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.10);
+  }
+
+  .badge.warn {
+    color: #fcd34d;
+    border-color: rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.10);
+  }
+
+  .desc {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 14px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 2px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .btn.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: rgba(59, 130, 246, 0.55);
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .steps {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding-left: 20px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 14px;
+  }
+
+  .footer {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+    text-align: center;
+    padding-top: 2px;
+  }
+
+  code {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #dbeafe;
+  }
+</style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <span class="eyebrow">免费公网 · 可持续更新 · 静态页</span>
+      <h1>交通标志题库入口</h1>
+      <p class="lead">
+        这套页面分成两层：<strong>正式考试版</strong>给她直接用，<strong>迭代工作台</strong>留给你继续加题、换题、调样式。
+        以后更新只改工作台，不动正式版，就不会把正在考试的人搞乱。
+      </p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <span class="badge ok">正式考试版</span>
+        <h2>31-50 题正式版</h2>
+        <p class="desc">
+          这是你已经发出去的稳定链接。考试时就发这个，不要再改它。
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="./31-50.html">打开正式版</a>
+        </div>
+        <p class="desc">
+          适合：她正在考试、你只想保证页面不变。
+        </p>
+      </article>
+
+      <article class="card">
+        <span class="badge warn">迭代工作台</span>
+        <h2>v2 迭代版</h2>
+        <p class="desc">
+          新题先放这里。你以后要继续扩题库、改题目、调交卷逻辑，就改这个版本。
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="./v2/31-50.html">打开迭代版</a>
+        </div>
+        <p class="desc">
+          适合：加题、试新样式、试新逻辑。确认没问题后，再同步到正式版。
+        </p>
+      </article>
+    </section>
+
+    <section class="card">
+      <span class="badge">怎么用</span>
+      <ol class="steps">
+        <li>现在发给她的，继续用 <code>31-50.html</code> 这个正式版链接。</li>
+        <li>你以后要改题，先改 <code>v2/31-50.html</code>，不要动正式版。</li>
+        <li>等新题确认好了，再把 v2 的改动同步回正式版。</li>
+        <li>每次推到 GitHub 后，Pages 会自动更新，通常几分钟内生效。</li>
+      </ol>
+    </section>
+
+    <div class="footer">
+      说明：这个仓库是静态网页，免费公开托管在 GitHub Pages 上，不需要你自己的服务器。
+    </div>
+  </main>
+</body>
+</html>
