@@ -563,9 +563,10 @@
       考试时间限额: 15 分钟 | 合格标准: 90 分<br>
       <span id="result-stat-details">交卷后显示答对、答错、未答数量。</span>
     </div>
-    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 10px;">
+    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 10px; flex-wrap: wrap;">
       <button class="btn" onclick="closeResultModal()">查看试卷</button>
       <button class="btn btn-submit" onclick="restartExam()">重新考试</button>
+      <button class="btn" style="background:#10b981;border-color:#10b981;" onclick="copyReport()">📋 复制成绩</button>
     </div>
   </div>
 </div>
@@ -1259,6 +1260,44 @@
     if (confirm('确定重新开考吗？当前答题记录会清空，并重新随机题目和选项。')) {
       startNewExam();
     }
+  }
+
+  function copyReport() {
+    const correctCount = activeQuestions.filter(q => userAnswers[q.id] === q.answerLabel).length;
+    const wrongQuestions = activeQuestions.filter(q => userAnswers[q.id] && userAnswers[q.id] !== q.answerLabel);
+    const unanswered = activeQuestions.filter(q => !userAnswers[q.id]);
+    const finalScore = correctCount * 5;
+    const passed = finalScore >= 90;
+    const now = new Date();
+    const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    
+    let report = '📊 科目一成绩 · 交通标志专项 (31-50题)\\n';
+    report += '交卷时间: ' + dateStr + '\\n';
+    report += '分数: ' + finalScore + ' | 合格线: 90 | ' + (passed ? '✅ 合格' : '❌ 未合格') + '\\n';
+    report += '答对: ' + correctCount + ' | 答错: ' + wrongQuestions.length + ' | 未答: ' + unanswered.length + '\\n';
+    
+    if (wrongQuestions.length > 0) {
+      report += '\\n错题:\\n';
+      wrongQuestions.forEach(q => {
+        const userAns = userAnswers[q.id];
+        const correctAns = q.answerLabel;
+        report += '  Q' + q.id + '(错选' + userAns + '→应为' + correctAns + ') ' + q.options[correctAns] + '\\n';
+      });
+    }
+    if (unanswered.length > 0) {
+      report += '\\n未答: ' + unanswered.map(q => 'Q' + q.id).join(', ') + '\\n';
+    }
+    report += '\\n---\\n来自: Hermes 驾考助手\\n发给 Wing 即可自动更新错题本';
+    
+    navigator.clipboard.writeText(report).then(() => {
+      const btn = event.target;
+      const orig = btn.innerText;
+      btn.innerText = '✅ 已复制！发给 Wing';
+      btn.style.background = '#059669';
+      setTimeout(() => { btn.innerText = orig; btn.style.background = '#10b981'; }, 2000);
+    }).catch(() => {
+      alert('复制失败，请手动截图发送给 Wing');
+    });
   }
 </script>
 

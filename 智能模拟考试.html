@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wing 科目一智能模拟考试系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --border: #334155;
+    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  [data-theme="light"] {
+    --bg-primary: #f1f5f9;
+    --bg-secondary: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --success: #059669;
+    --warning: #d97706;
+    --error: #dc2626;
+    --border: #e2e8f0;
+    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background-color 0.3s, border-color 0.3s, color 0.2s;
+  }
+
+  body {
+    font-family: 'Outfit', 'Noto Sans SC', -apple-system, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-container h1 {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .logo-container span {
+    font-size: 11px;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 99px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-weight: 600;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    background-color: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    border-color: var(--border);
+    color: var(--text-primary);
+  }
+
+  .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  [data-theme="light"] .btn-secondary:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  .theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  .theme-toggle:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  [data-theme="light"] .theme-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    gap: 24px;
+  }
+
+  @media (max-width: 1024px) {
+    main {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .controls-bar {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .mode-selectors {
+    display: flex;
+    gap: 8px;
+    background: rgba(0,0,0,0.15);
+    padding: 4px;
+    border-radius: 8px;
+  }
+
+  [data-theme="light"] .mode-selectors {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .mode-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .mode-btn.active {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .timer-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--warning);
+    font-size: 15px;
+  }
+
+  .timer-icon {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+  }
+
+  .card-container {
+    perspective: 1000px;
+    min-height: 480px;
+    position: relative;
+  }
+
+  .question-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+  }
+
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+  }
+
+  .question-id {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .question-tag {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 99px;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .question-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .question-title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .question-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 16px;
+    max-height: 200px;
+    overflow: hidden;
+  }
+
+  [data-theme="light"] .question-visual {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .question-visual img {
+    max-height: 160px;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+
+  .options-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .option-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    padding: 14px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    text-align: left;
+  }
+
+  [data-theme="light"] .option-item {
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .option-item:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: rgba(59, 130, 246, 0.05);
+  }
+
+  .option-item.selected {
+    border-color: var(--accent);
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: var(--accent);
+  }
+
+  .option-item.correct {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: var(--success);
+  }
+
+  .option-item.incorrect {
+    border-color: var(--error);
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: var(--error);
+  }
+
+  .option-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 99px;
+    border: 1.5px solid var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .option-item.selected .option-badge {
+    border-color: var(--accent);
+    background-color: var(--accent);
+    color: white;
+  }
+
+  .option-item.correct .option-badge {
+    border-color: var(--success);
+    background-color: var(--success);
+    color: white;
+  }
+
+  .option-item.incorrect .option-badge {
+    border-color: var(--error);
+    background-color: var(--error);
+    color: white;
+  }
+
+  .explanation-box {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px dashed rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .explanation-box strong {
+    color: var(--success);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .navigation-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-center {
+    display: flex;
+    gap: 12px;
+  }
+
+  /* Sidebar styling */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .panel {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .panel-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+
+  .exam-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+  }
+
+  .info-row strong {
+    color: var(--text-primary);
+  }
+
+  .progress-container {
+    margin-top: 10px;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 6px;
+    background-color: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #60a5fa);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .grid-item {
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .grid-item:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+  }
+
+  .grid-item.active {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: white !important;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+  }
+
+  .grid-item.answered {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+  }
+
+  [data-theme="light"] .grid-item.answered {
+    background-color: rgba(0,0,0,0.03);
+  }
+
+  .grid-item.correct {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    border-color: var(--success) !important;
+    color: var(--success) !important;
+  }
+
+  .grid-item.incorrect {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    border-color: var(--error) !important;
+    color: var(--error) !important;
+  }
+
+  .grid-item.marked {
+    border-color: var(--warning) !important;
+    color: var(--warning) !important;
+    border-width: 2px;
+  }
+
+  /* Result overlay */
+  .result-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .result-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    max-width: 520px;
+    width: 100%;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 999px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 6px solid var(--accent);
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.2);
+  }
+
+  .score-val {
+    font-size: 48px;
+    font-weight: 800;
+  }
+
+  .score-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .result-status {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .status-pass {
+    color: var(--success);
+  }
+
+  .status-fail {
+    color: var(--error);
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes scaleUp {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<header>
+  <div class="logo-container">
+    <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent); width: 24px; height: 24px;">
+      <circle cx="12" cy="12" r="10" stroke="currentColor"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="currentColor"/>
+      <path d="M2 12h20" stroke="currentColor"/>
+    </svg>
+    <div>
+      <h1>Wing One-Stop Sourcing</h1>
+      <p style="font-size: 11px; color: var(--text-secondary)">科目一 · 智能模拟练习系统</p>
+    </div>
+    <span>PRO</span>
+  </div>
+
+  <div class="header-actions">
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="切换主题">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="btn btn-secondary" onclick="resetSystem()">重置进度</button>
+  </div>
+</header>
+
+<main>
+  <div class="workspace">
+    <!-- 顶部状态与控制 -->
+    <div class="controls-bar">
+      <div class="mode-selectors">
+        <button class="mode-btn active" id="btn-mode-study" onclick="switchMode('study')">背题模式</button>
+        <button class="mode-btn" id="btn-mode-exam" onclick="switchMode('exam')">模拟考试</button>
+        <button class="mode-btn" id="btn-mode-wrong" onclick="switchMode('wrong')">错题本 (<span id="wrong-count">0</span>)</button>
+      </div>
+
+      <div class="timer-container" id="timer-box" style="display: none;">
+        <svg class="timer-icon" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span id="time-display">45:00</span>
+      </div>
+    </div>
+
+    <!-- 题目卡片区 -->
+    <div class="card-container">
+      <div class="question-card" id="q-card">
+        <div class="question-header">
+          <span class="question-id" id="q-number">加载中...</span>
+          <span class="question-tag" id="q-category">高频考点</span>
+        </div>
+        
+        <div class="question-body">
+          <div class="question-title" id="q-title">题目加载中，请稍候...</div>
+          
+          <!-- 智能标志物绘制/展示区 -->
+          <div class="question-visual" id="q-visual" style="display: none;">
+            <!-- SVG或者是img将插入到这里 -->
+          </div>
+
+          <div class="options-list" id="q-options">
+            <!-- 选项列表 -->
+          </div>
+
+          <!-- 背题模式解析 -->
+          <div class="explanation-box" id="q-explanation" style="display: none;">
+            <strong>💡 Wing 记忆法 / 考点解析：</strong>
+            <span id="q-explanation-text"></span>
+          </div>
+        </div>
+
+        <div class="navigation-bar">
+          <button class="btn btn-secondary" id="btn-prev" onclick="navigate(-1)">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            上一题
+          </button>
+          
+          <div class="nav-center">
+            <button class="btn btn-secondary" id="btn-mark" onclick="toggleMark()" style="border-color: var(--warning); color: var(--warning);">
+              标记此题
+            </button>
+            <button class="btn btn-primary" id="btn-submit-exam" onclick="finishExam()" style="display: none; background-color: var(--success);">
+              交卷评估
+            </button>
+          </div>
+
+          <button class="btn btn-secondary" id="btn-next" onclick="navigate(1)">
+            下一题
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 侧边栏：答题卡与考试进度 -->
+  <div class="sidebar">
+    <div class="panel">
+      <div class="panel-title">
+        <span>当前进度</span>
+        <span id="progress-percent" style="font-size: 13px; color: var(--accent);">0%</span>
+      </div>
+      <div class="exam-info">
+        <div class="info-row">
+          <span>总题目数</span>
+          <strong id="side-total">90 题</strong>
+        </div>
+        <div class="info-row">
+          <span>已答题数</span>
+          <strong id="side-answered">0 题</strong>
+        </div>
+        <div class="info-row" id="exam-score-row" style="display: none;">
+          <span>模拟分数</span>
+          <strong id="side-score" style="color: var(--success);">N/A</strong>
+        </div>
+      </div>
+      <div class="progress-container">
+        <div class="progress-header">
+          <span>完成度</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="progress-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="flex: 1; display: flex; flex-direction: column;">
+      <div class="panel-title">快捷答题卡</div>
+      <div class="card-grid" id="answer-sheet">
+        <!-- 题号卡片 -->
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 结算弹窗 -->
+<div class="result-modal" id="result-modal">
+  <div class="result-card">
+    <h2 style="font-size: 28px; font-weight: 800;">考试结算报告</h2>
+    <div class="score-circle" id="result-score-circle">
+      <span class="score-val" id="result-score">0</span>
+      <span class="score-label">分</span>
+    </div>
+    <div class="result-status" id="result-status-text">未通过</div>
+    <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+      考试时长: 45 分钟 | 合格线: 90 分<br>
+      <span id="result-stat-details">错题已自动收入“错题本”，请针对性复习！</span>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button class="btn btn-secondary" onclick="closeResultModal()">查看错题</button>
+      <button class="btn btn-primary" onclick="restartExam()">重新挑战</button>
+      <button class="btn" style="background:#10b981;border:1px solid #10b981;color:#fff;" onclick="copyReport()">📋 复制成绩</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 题库数据，完美涵盖 1-90 题
+  const questions = [
+  {
+    "id": 1,
+    "question": "驾驶机动车在道路上违反道路交通安全法的行为，属于什么行为？",
+    "options": {
+      "A": "违法行为",
+      "B": "违章行为",
+      "C": "违规行为",
+      "D": "过失行为"
+    },
+    "answer": "A",
+    "note": "违法=违反法律；违章=违反规章。道路交通安全法是法律，所以是违法行为。"
+  },
+  {
+    "id": 2,
+    "question": "机动车在高速公路上发生故障时，警告标志应当设置在故障车来车方向多少米以外？",
+    "options": {
+      "A": "50米",
+      "B": "100米",
+      "C": "150米",
+      "D": "200米"
+    },
+    "answer": "C",
+    "note": "高速公路故障警示牌放置距离为150米。"
+  },
+  {
+    "id": 3,
+    "question": "驾驶机动车在道路上追逐竞驶，情节恶劣的，会受到什么处罚？",
+    "options": {
+      "A": "扣留机动车",
+      "B": "处拘役，并处罚金",
+      "C": "吊销驾驶证",
+      "D": "行政拘留"
+    },
+    "answer": "B",
+    "note": "追逐竞驶情节恶劣→危险驾驶罪→拘役+罚金。"
+  },
+  {
+    "id": 4,
+    "question": "白底红圈—数字\"40\"，这属于哪一类标志？",
+    "options": {
+      "A": "最高限速标志",
+      "B": "最低限速标志",
+      "C": "解除限速标志",
+      "D": "建议速度标志"
+    },
+    "answer": "A",
+    "note": "红圈+数字=最高限速；蓝底+数字=最低限速。"
+  },
+  {
+    "id": 5,
+    "question": "驾驶人连续驾驶机动车超过多长时间须休息？",
+    "options": {
+      "A": "2小时",
+      "B": "3小时",
+      "C": "4小时",
+      "D": "5小时"
+    },
+    "answer": "C",
+    "note": "连续驾驶4小时必须停车休息，休息时间不少于20分钟。"
+  },
+  {
+    "id": 6,
+    "question": "夜间驾驶机动车在没有中心隔离设施的道路上会车时，应如何使用灯光？",
+    "options": {
+      "A": "使用远光灯",
+      "B": "使用近光灯",
+      "C": "交替使用远近光灯",
+      "D": "关闭所有灯光"
+    },
+    "answer": "B",
+    "note": "会车时应使用近光灯，避免远光灯眩目。"
+  },
+  {
+    "id": 7,
+    "question": "机动车驾驶证 of 有效期为多少年？",
+    "options": {
+      "A": "3年",
+      "B": "5年",
+      "C": "6年",
+      "D": "10年"
+    },
+    "answer": "C",
+    "note": "首次领证有效期6年，换证后10年，再换长期。"
+  },
+  {
+    "id": 8,
+    "question": "蓝色方框—白色\"P\"字，这是什么标志？",
+    "options": {
+      "A": "停车场标志",
+      "B": "停车让行标志",
+      "C": "禁止停放车辆标志",
+      "D": "客车站标志"
+    },
+    "answer": "A",
+    "note": "蓝底白P=停车场；红圈红叉=禁止停车。"
+  },
+  {
+    "id": 9,
+    "question": "大雾天气下行车应如何使用灯光？",
+    "options": {
+      "A": "开启雾灯 and 危险报警闪光灯",
+      "B": "仅开启远光灯",
+      "C": "仅开启近光灯",
+      "D": "关闭所有灯光"
+    },
+    "answer": "A",
+    "note": "大雾天=雾灯+双闪，远光灯会被雾气反射反而看不清。"
+  },
+  {
+    "id": 10,
+    "question": "驾驶机动车不按规定使用灯光的，一次记多少分？",
+    "options": {
+      "A": "1分",
+      "B": "3分",
+      "C": "6分",
+      "D": "12分"
+    },
+    "answer": "A",
+    "note": "不按规定使用灯光记1分。"
+  },
+  {
+    "id": 11,
+    "question": "驾驶机动车在高速公路、城市快速路以外的道路上行驶超过规定时速50%以上的，一次记多少分？",
+    "options": {
+      "A": "3分",
+      "B": "6分",
+      "C": "9分",
+      "D": "12分"
+    },
+    "answer": "D",
+    "note": "普通道路超速50%以上记12分。"
+  },
+  {
+    "id": 12,
+    "question": "机动车在道路上临时停车时，应当遵守哪项规定？",
+    "options": {
+      "A": "可逆向停车",
+      "B": "不得妨碍其他车辆和行人通行",
+      "C": "可在人行横道停车",
+      "D": "可在交叉路口内停车"
+    },
+    "answer": "B",
+    "note": "临时停车核心原则：不妨碍其他车辆和行人。"
+  },
+  {
+    "id": 13,
+    "question": "饮酒后驾驶机动车的，一次记多少分？",
+    "options": {
+      "A": "3分",
+      "B": "6分",
+      "C": "9分",
+      "D": "12分"
+    },
+    "answer": "D",
+    "note": "酒驾一次记12分。"
+  },
+  {
+    "id": 14,
+    "question": "红色圆圈—白色横杠，这是什么标志？",
+    "options": {
+      "A": "禁止驶入",
+      "B": "禁止通行",
+      "C": "禁止停车",
+      "D": "禁止掉头"
+    },
+    "answer": "A",
+    "note": "红圈白杠=禁止驶入（车辆不得进入）。红圈白底无内容=禁止通行（人和车都禁止）。"
+  },
+  {
+    "id": 15,
+    "question": "驾驶机动车遇行人正在通过人行横道时，应当如何做？",
+    "options": {
+      "A": "加速通过",
+      "B": "鸣喇叭示意行人让行",
+      "C": "停车让行",
+      "D": "绕行通过"
+    },
+    "answer": "C",
+    "note": "人行横道有人=必须停车让行。"
+  },
+  {
+    "id": 16,
+    "question": "同车道行驶的机动车，后车应与前车保持怎样的安全距离？",
+    "options": {
+      "A": "固定30米",
+      "B": "固定50米",
+      "C": "足以采取紧急制动措施的安全距离",
+      "D": "没有具体要求"
+    },
+    "answer": "C",
+    "note": "安全距离不是固定值，要根据车速和路况留有足够制动距离。"
+  },
+  {
+    "id": 17,
+    "question": "驾驶机动车在高速公路上行驶，遇能见度小于50米时，最高车速不得超过多少？",
+    "options": {
+      "A": "30公里/小时",
+      "B": "40公里/小时",
+      "C": "20公里/小时",
+      "D": "60公里/小时"
+    },
+    "answer": "C",
+    "note": "能见度＜50米→最高20km/h，尽快驶离高速。"
+  },
+  {
+    "id": 18,
+    "question": "白底黑字—\"G2\"，这是什么标志？",
+    "options": {
+      "A": "省道编号",
+      "B": "县道编号",
+      "C": "国道编号",
+      "D": "乡道编号"
+    },
+    "answer": "C",
+    "note": "G=国道；S=省道；X=县道；Y=乡道。"
+  },
+  {
+    "id": 19,
+    "question": "驾驶证被暂扣期间驾驶机动车的，由公安机关交通管理部门处多少罚款？",
+    "options": {
+      "A": "200元以上500元以下",
+      "B": "200元以上2000元以下",
+      "C": "500元以上1000元以下",
+      "D": "1000元以上2000元以下"
+    },
+    "answer": "B",
+    "note": "证被扣期间开车→罚款200-2000元。"
+  },
+  {
+    "id": 20,
+    "question": "驾驶机动车在路口遇有交通信号灯和交通警察指挥不一致时，应如何通行？",
+    "options": {
+      "A": "按照交通信号灯通行",
+      "B": "按照交通警察指挥通行",
+      "C": "原地等待",
+      "D": "自行判断"
+    },
+    "answer": "B",
+    "note": "警察指挥＞信号灯＞标志标线。"
+  },
+  {
+    "id": 21,
+    "question": "在道路上发生交通事故，仅造成轻微财产损失，并且基本事实清楚的，当事人应当如何处理？",
+    "options": {
+      "A": "在原地等待交警",
+      "B": "先撤离现场再进行协商处理",
+      "C": "拨打120",
+      "D": "不得移动车辆"
+    },
+    "answer": "B",
+    "note": "轻微事故、无争议→先撤离再协商，避免拥堵。"
+  },
+  {
+    "id": 22,
+    "question": "黄色双实线表示什么？",
+    "options": {
+      "A": "允许跨越超车",
+      "B": "禁止跨越对向车道",
+      "C": "可短暂借道",
+      "D": "允许掉头"
+    },
+    "answer": "B",
+    "note": "双黄实线=不可跨越的中央隔离线。"
+  },
+  {
+    "id": 23,
+    "question": "驾驶机动车在高速公路上倒车、逆行、穿越中央分隔带掉头的，一次记多少分？",
+    "options": {
+      "A": "6分",
+      "B": "9分",
+      "C": "12分",
+      "D": "吊销驾驶证"
+    },
+    "answer": "C",
+    "note": "高速倒车/逆行/掉头=12分。"
+  },
+  {
+    "id": 24,
+    "question": "驾驶机动车行经没有交通信号的道路，遇行人横过道路时，应当如何做？",
+    "options": {
+      "A": "鸣喇叭催促",
+      "B": "加速通过",
+      "C": "减速或停车避让",
+      "D": "远光灯示意"
+    },
+    "answer": "C",
+    "note": "无信号灯+行人=减速或停车避让。"
+  },
+  {
+    "id": 25,
+    "question": "白底红圈—黑色\"×\"，这是什么标志？",
+    "options": {
+      "A": "禁止停车",
+      "B": "禁止长时间停车",
+      "C": "禁止通行",
+      "D": "禁止驶入"
+    },
+    "answer": "A",
+    "note": "红圈黑×=禁止停车（完全不能停）。红圈红\\=禁止长时间停车。易混淆！"
+  },
+  {
+    "id": 26,
+    "question": "驾驶机动车在冰雪道路上行驶，最高行驶速度不得超过多少？",
+    "options": {
+      "A": "30公里/小时",
+      "B": "20公里/小时",
+      "C": "40公里/小时",
+      "D": "50公里/小时"
+    },
+    "answer": "A",
+    "note": "冰雪路面最高30km/h。"
+  },
+  {
+    "id": 27,
+    "question": "驾驶机动车不按交通信号灯指示通行的，一次记多少分？",
+    "options": {
+      "A": "1分",
+      "B": "3分",
+      "C": "6分",
+      "D": "12分"
+    },
+    "answer": "C",
+    "note": "闯红灯记6分。"
+  },
+  {
+    "id": 28,
+    "question": "申请小型汽车驾驶证的人，年龄应在多少周岁以上？",
+    "options": {
+      "A": "16周岁",
+      "B": "18周岁",
+      "C": "20周岁",
+      "D": "21周岁"
+    },
+    "answer": "B",
+    "note": "C1/C2申请年龄下限18周岁。"
+  },
+  {
+    "id": 29,
+    "question": "驾驶机动车在隧道内行驶时，应遵守哪项规定？",
+    "options": {
+      "A": "可超车",
+      "B": "可掉头",
+      "C": "开远光灯",
+      "D": "开灯行驶（近光灯或前照灯）"
+    },
+    "answer": "D",
+    "note": "隧道必须开灯。"
+  },
+  {
+    "id": 30,
+    "question": "驾驶机动车在高速公路遇到能见度低于200米的雾天，最高车速不得超过多少？",
+    "options": {
+      "A": "40公里/小时",
+      "B": "50公里/小时",
+      "C": "60公里/小时",
+      "D": "80公里/小时"
+    },
+    "answer": "C",
+    "note": "能见度＜200m→最高60km/h（记住：200→60，100→40，50→20）。"
+  },
+  {
+    "id": 31,
+    "question": "驾驶机动车通过铁路道口时，最高行驶速度不得超过多少？",
+    "options": {
+      "A": "15公里/小时",
+      "B": "20公里/小时",
+      "C": "30公里/小时",
+      "D": "40公里/小时"
+    },
+    "answer": "C",
+    "note": "铁路道口最高30km/h。非机动车过铁道路口最高15km/h。"
+  },
+  {
+    "id": 32,
+    "question": "机动车驶入环形路口时，应遵守哪项规定？",
+    "options": {
+      "A": "开启左转向灯",
+      "B": "开启右转向灯",
+      "C": "让已在路口内的车辆先行",
+      "D": "加速驶入"
+    },
+    "answer": "C",
+    "note": "进入环岛让已在环岛内车辆先行；驶出环岛时开右转向灯。"
+  },
+  {
+    "id": 33,
+    "question": "驾驶机动车变更车道时，应当提前几秒开启转向灯？",
+    "options": {
+      "A": "1秒",
+      "B": "2秒",
+      "C": "3秒",
+      "D": "5秒"
+    },
+    "answer": "C",
+    "note": "变道提前3秒开转向灯。"
+  },
+  {
+    "id": 34,
+    "question": "车辆通过涉水路段后，应怎样操作以保证行车安全？",
+    "options": {
+      "A": "加速通过",
+      "B": "反复踩踏制动踏板恢复制动效能",
+      "C": "立即停车检查",
+      "D": "保持高速行驶"
+    },
+    "answer": "B",
+    "note": "涉水后轻踩刹车磨干刹车片，恢复制动效能。"
+  },
+  {
+    "id": 35,
+    "question": "高速公路同方向有三条车道时，左侧车道的最低时速是多少？",
+    "options": {
+      "A": "60公里",
+      "B": "90公里",
+      "C": "100公里",
+      "D": "110公里"
+    },
+    "answer": "D",
+    "note": "三车道高速：左110、中90、右60（最低限速）。"
+  },
+  {
+    "id": 36,
+    "question": "驾驶人在实习期内驾驶机动车上高速公路行驶，应当由持相应或者更高准驾车型驾驶证几年以上的驾驶人陪同？",
+    "options": {
+      "A": "1年",
+      "B": "2年",
+      "C": "3年",
+      "D": "5年"
+    },
+    "answer": "C",
+    "note": "实习期上高速需3年以上老司机陪同。"
+  },
+  {
+    "id": 37,
+    "question": "小型汽车从注册登记之日起，多长时间内免予安全技术检验？",
+    "options": {
+      "A": "4年",
+      "B": "5年",
+      "C": "6年",
+      "D": "10年"
+    },
+    "answer": "C",
+    "note": "9座以下非营运小客车6年内免检（需每两年申领检验标志）。"
+  },
+  {
+    "id": 38,
+    "question": "调整汽车座椅安全头枕的高度时，应使头枕中心对准驾驶人什么部位？",
+    "options": {
+      "A": "头顶",
+      "B": "后脑勺（头后部）",
+      "C": "颈部",
+      "D": "肩部"
+    },
+    "answer": "B",
+    "note": "头枕中心对准后脑勺，不是颈部！保护追尾时颈椎。"
+  },
+  {
+    "id": 39,
+    "question": "装有ABS防抱死制动系统的机动车，在紧急制动时可用力踩制动踏板，此时会有什么现象？",
+    "options": {
+      "A": "制动距离延长",
+      "B": "转向能力丧失",
+      "C": "制动踏板发生抖动",
+      "D": "车辆跑偏"
+    },
+    "answer": "C",
+    "note": "ABS工作时制动踏板会抖动，正常现象，不要松脚。"
+  },
+  {
+    "id": 40,
+    "question": "校车在同方向只有一条机动车道的道路上停靠时，后方车辆应当如何做？",
+    "options": {
+      "A": "减速通过",
+      "B": "停车等待，不得鸣喇叭催促",
+      "C": "借用对向车道超车",
+      "D": "开启远光灯示意"
+    },
+    "answer": "B",
+    "note": "校车停靠上下学生→后方车辆必须停车等待，禁止鸣喇叭。"
+  },
+  {
+    "id": 41,
+    "question": "用软连接装置牵引故障机动车时，牵引车与被牵引车之间的距离应为多少？",
+    "options": {
+      "A": "小于2米",
+      "B": "2米至5米",
+      "C": "大于4米小于10米",
+      "D": "大于10米"
+    },
+    "answer": "C",
+    "note": "软连接牵引距离：大于4米小于10米。"
+  },
+  {
+    "id": 42,
+    "question": "驾驶机动车从匝道驶入高速公路时，应当开启什么灯？",
+    "options": {
+      "A": "左转向灯",
+      "B": "右转向灯",
+      "C": "危险报警闪光灯",
+      "D": "前照灯"
+    },
+    "answer": "A",
+    "note": "匝道进入高速=开左转向灯，汇入主路相当于向左变道。"
+  },
+  {
+    "id": 43,
+    "question": "驾驶机动车在下长坡路段，应怎样使用行车制动？",
+    "options": {
+      "A": "持续踩住制动踏板",
+      "B": "利用发动机怠速减速",
+      "C": "挂低速挡，利用发动机制动",
+      "D": "频繁踩踏和放松制动踏板"
+    },
+    "answer": "C",
+    "note": "下长坡挂低速挡利用发动机制动，避免刹车过热失效。"
+  },
+  {
+    "id": 44,
+    "question": "行车中轮胎突然爆裂时的应急措施是什么？",
+    "options": {
+      "A": "紧急制动",
+      "B": "迅速转动转向盘",
+      "C": "握稳转向盘，控制行驶方向并缓慢减速",
+      "D": "加速行驶"
+    },
+    "answer": "C",
+    "note": "爆胎→握稳方向+缓减速。切忌急刹 and 猛打方向。"
+  },
+  {
+    "id": 45,
+    "question": "机动车行驶时，驾驶人、乘坐人员是否应当按规定使用安全带？",
+    "options": {
+      "A": "只有驾驶人必须使用",
+      "B": "只有前排乘坐人员必须使用",
+      "C": "驾驶人和乘坐人员都必须使用",
+      "D": "无强制要求"
+    },
+    "answer": "C",
+    "note": "驾驶人和所有乘坐人员都必须系安全带。"
+  },
+  {
+    "id": 46,
+    "question": "黑边黄底三角形—图案为\"人\"形，这是什么标志？",
+    "options": {
+      "A": "注意行人标志",
+      "B": "人行横道标志",
+      "C": "行人禁止通行标志",
+      "D": "步行街标志"
+    },
+    "answer": "A",
+    "note": "黄底三角形=警告标志，人形=注意行人。"
+  },
+  {
+    "id": 47,
+    "question": "驾驶与准驾车型不符的机动车的，一次记多少分？",
+    "options": {
+      "A": "1分",
+      "B": "3分",
+      "C": "6分",
+      "D": "9分"
+    },
+    "answer": "D",
+    "note": "准驾车型不符→记9分（2022新规，以前是12分）。"
+  },
+  {
+    "id": 48,
+    "question": "驾驶机动车在没有中心线的城市道路上，最高行驶速度不得超过多少？",
+    "options": {
+      "A": "30公里/小时",
+      "B": "40公里/小时",
+      "C": "50公里/小时",
+      "D": "60公里/小时"
+    },
+    "answer": "A",
+    "note": "无中心线城市道路→30km/h。无中心线公路→40km/h。"
+  },
+  {
+    "id": 49,
+    "question": "夜间驾驶机动车在有路灯的道路上行驶时，应如何使用灯光？",
+    "options": {
+      "A": "使用远光灯",
+      "B": "使用近光灯",
+      "C": "交替使用远近光灯",
+      "D": "关闭所有灯光"
+    },
+    "answer": "B",
+    "note": "有路灯照明良好的道路→近光灯。"
+  },
+  {
+    "id": 50,
+    "question": "驾驶机动车在上坡路段停车时，除了拉紧驻车制动器外，还应怎样做？",
+    "options": {
+      "A": "将变速杆挂入低速挡",
+      "B": "将变速杆挂入空挡",
+      "C": "将转向盘向左打",
+      "D": "不用额外操作"
+    },
+    "answer": "C",
+    "note": "上坡停车：拉手刹+向左打方向，万一溜车轮胎卡路缘石。"
+  },
+  {
+    "id": 51,
+    "question": "在没有中心隔离设施或者没有中心线的道路上，机动车遇相对方向来车时，下坡车和上坡车哪一方应让行？",
+    "options": {
+      "A": "下坡车让上坡车",
+      "B": "上坡车让下坡车",
+      "C": "同时通过互不相让",
+      "D": "靠右侧一方先行"
+    },
+    "answer": "A",
+    "note": "下坡车让上坡车（上坡阻力大、停车再起步难）。但下坡车已行至中途而上坡车未上坡时，下坡车先行。"
+  },
+  {
+    "id": 52,
+    "question": "驾驶机动车通过立交桥时，应怎样左转弯？",
+    "options": {
+      "A": "过桥前右转弯",
+      "B": "过桥后右转弯",
+      "C": "过桥前左转弯",
+      "D": "过桥后左转弯"
+    },
+    "answer": "B",
+    "note": "立交桥左转弯→过桥后右转弯（右转绕行实现左转）。"
+  },
+  {
+    "id": 53,
+    "question": "驾驶机动车驶离高速公路时，应当开启什么灯？",
+    "options": {
+      "A": "左转向灯",
+      "B": "右转向灯",
+      "C": "危险报警闪光灯",
+      "D": "前照灯"
+    },
+    "answer": "B",
+    "note": "驶离高速开右转灯；进入高速开左转灯。两者相反！"
+  },
+  {
+    "id": 54,
+    "question": "夜间驾驶机动车跟车行驶时，应如何使用灯光？",
+    "options": {
+      "A": "使用远光灯",
+      "B": "使用近光灯",
+      "C": "交替使用远近光灯",
+      "D": "关闭前照灯"
+    },
+    "answer": "B",
+    "note": "跟车用近光灯，远光会通过前车后视镜眩目。"
+  },
+  {
+    "id": 55,
+    "question": "驾驶机动车通过没有交通信号灯、交通标志、交通标线也没有交通警察指挥的交叉路口时，应遵守哪项规定？",
+    "options": {
+      "A": "加速通过",
+      "B": "减速慢行，并让行人和优先通行的车辆先行",
+      "C": "鸣喇叭后通过",
+      "D": "靠右行驶直接通过"
+    },
+    "answer": "B",
+    "note": "无任何交通管制的路口→减速慢行，让行人+优先通行车辆先行。"
+  },
+  {
+    "id": 56,
+    "question": "发生交通事故后当事人逃逸的，逃逸的当事人承担什么责任？",
+    "options": {
+      "A": "部分责任",
+      "B": "全部责任",
+      "C": "无责任",
+      "D": "次要责任"
+    },
+    "answer": "B",
+    "note": "逃逸→承担全部责任。"
+  },
+  {
+    "id": 57,
+    "question": "驾驶已达到报废标准的机动车上道路行驶的，会受到什么处罚？",
+    "options": {
+      "A": "罚款200元",
+      "B": "扣留驾驶证",
+      "C": "吊销驾驶证并收缴车辆强制报废",
+      "D": "警告"
+    },
+    "answer": "C",
+    "note": "开报废车上路→吊销驾驶证+收缴车辆强制报废。"
+  },
+  {
+    "id": 58,
+    "question": "黄灯持续闪烁时，表示什么含义？",
+    "options": {
+      "A": "禁止通行",
+      "B": "路口交通信号暂时解除",
+      "C": "注意瞭望，确认安全后通过",
+      "D": "加速通过"
+    },
+    "answer": "C",
+    "note": "黄灯闪烁=注意瞭望、确认安全后通过（警示，非禁止）。"
+  },
+  {
+    "id": 59,
+    "question": "驾驶机动车在山区道路行驶，遇到对面来车时，应怎样会车？",
+    "options": {
+      "A": "加速通过",
+      "B": "不减速",
+      "C": "紧靠道路中心行驶",
+      "D": "减速或停车让行，靠右行驶"
+    },
+    "answer": "D",
+    "note": "山区会车→减速或停车让行，靠右行驶。"
+  },
+  {
+    "id": 60,
+    "question": "雨天驾驶机动车在高速公路行驶，为防止\"水滑\"现象，应怎样做？",
+    "options": {
+      "A": "高速通过",
+      "B": "紧急制动",
+      "C": "控制车速，保持匀速",
+      "D": "安装防滑链"
+    },
+    "answer": "C",
+    "note": "防\"水滑\"→控制车速、保持匀速，避免急刹 and 急加速。"
+  },
+  {
+    "id": 61,
+    "question": "警车、消防车、救护车、工程救险车执行紧急任务时，其他车辆应当如何做？",
+    "options": {
+      "A": "可加速通过",
+      "B": "应当让行",
+      "C": "视情况而定",
+      "D": "可不予理会"
+    },
+    "answer": "B",
+    "note": "特种车辆执行紧急任务→应当让行，法律义务。"
+  },
+  {
+    "id": 62,
+    "question": "已注册登记的机动车，改变车身颜色的，机动车所有人应当向哪个部门申请变更登记？",
+    "options": {
+      "A": "保险公司",
+      "B": "4S店",
+      "C": "登记地车辆管理所",
+      "D": "居住地派出所"
+    },
+    "answer": "C",
+    "note": "改变车身颜色→向登记地车管所申请变更登记。"
+  },
+  {
+    "id": 63,
+    "question": "驾驶拼装的机动车上道路行驶的，会受到什么处罚？",
+    "options": {
+      "A": "罚款200元",
+      "B": "吊销驾驶证，并收缴车辆强制报废",
+      "C": "扣留驾驶证",
+      "D": "警告"
+    },
+    "answer": "B",
+    "note": "开拼装车上路→吊销驾驶证+收缴车辆强制报废。"
+  },
+  {
+    "id": 64,
+    "question": "连续驾驶中型以上载客汽车、危险物品运输车辆超过4小时未停车休息的，一次记多少分？",
+    "options": {
+      "A": "3分",
+      "B": "6分",
+      "C": "9分",
+      "D": "12分"
+    },
+    "answer": "C",
+    "note": "客车/危化品车疲劳驾驶→记9分。"
+  },
+  {
+    "id": 65,
+    "question": "交通警察发出左臂向前上方直伸，掌心向前——这是什么信号？",
+    "options": {
+      "A": "左转弯信号",
+      "B": "停止信号",
+      "C": "直行信号",
+      "D": "靠边停车信号"
+    },
+    "answer": "B",
+    "note": "左臂前伸掌心向前=停止信号。右臂前伸左摆=左转弯。"
+  },
+  {
+    "id": 66,
+    "question": "驾驶机动车上道路行驶，未悬挂机动车号牌的，一次记多少分？",
+    "options": {
+      "A": "3分",
+      "B": "6分",
+      "C": "9分",
+      "D": "12分"
+    },
+    "answer": "C",
+    "note": "未悬挂号牌→记9分（2022新规，以前是12分）。"
+  },
+  {
+    "id": 67,
+    "question": "驾驶机动车在没有中心线的公路上，最高行驶速度不得超过多少？",
+    "options": {
+      "A": "30公里/小时",
+      "B": "40公里/小时",
+      "C": "50公里/小时",
+      "D": "60公里/小时"
+    },
+    "answer": "B",
+    "note": "无中心线公路→40km/h；无中心城市道路→30km/h。易混！"
+  },
+  {
+    "id": 68,
+    "question": "在事故现场，抢救失血伤员时，应首先采取什么措施？",
+    "options": {
+      "A": "进行人工呼吸",
+      "B": "包扎止血",
+      "C": "清洗伤口",
+      "D": "询问伤员情况"
+    },
+    "answer": "B",
+    "note": "失血伤员→先止血。ABC急救原则：止血优先。"
+  },
+  {
+    "id": 69,
+    "question": "道路中间有黄色虚实线（一侧实线、一侧虚线），虚线一侧的车辆在什么情况下可以越线？",
+    "options": {
+      "A": "任何时候都可以",
+      "B": "保证安全时可以临时越线超车或转弯",
+      "C": "绝对不可以",
+      "D": "只可以掉头"
+    },
+    "answer": "B",
+    "note": "虚实线→虚线一侧在保证安全时可临时越线；实线一侧禁止越线。"
+  },
+  {
+    "id": 70,
+    "question": "持有大型客车、重型牵引挂车、城市公交车、中型客车、大型货车驾驶证的驾驶人，应当在每个记分周期结束后多少日内接受审验？",
+    "options": {
+      "A": "15日",
+      "B": "30日",
+      "C": "60日",
+      "D": "90日"
+    },
+    "answer": "B",
+    "note": "A/B/N/P照→周期结束后30日内审验（有记分才需审，无记分免审）。"
+  },
+  {
+    "id": 71,
+    "question": "【标志】黄底黑边三角形——图案为前方一个\"∧\"形（尖顶），这是什么标志？",
+    "options": {
+      "A": "注意交叉路口",
+      "B": "注意急弯路",
+      "C": "驼峰桥",
+      "D": "连续弯路"
+    },
+    "answer": "B",
+    "note": "黄底三角形∧形=注意急弯路。"
+  },
+  {
+    "id": 72,
+    "question": "【标志】白底红圈——图案为一辆小轿车正面轮廓，这是什么标志？",
+    "options": {
+      "A": "禁止大型客车通行",
+      "B": "禁止小型客车通行",
+      "C": "禁止机动车通行",
+      "D": "禁止载货汽车通行"
+    },
+    "answer": "C",
+    "note": "红圈+小轿车=禁止机动车通行。"
+  },
+  {
+    "id": 73,
+    "question": "【标线】路面上白色菱形图案（◇），这是什么标线？",
+    "options": {
+      "A": "人行横道预告标线",
+      "B": "减速让行线",
+      "C": "停车让行线",
+      "D": "导向车道线"
+    },
+    "answer": "A",
+    "note": "白色菱形◇=人行横道预告标线。"
+  },
+  {
+    "id": 74,
+    "question": "【标志】蓝底方形——图案为一个白色箭头向前、一个白色箭头向左转弯，这是什么标志？",
+    "options": {
+      "A": "直行和左转合用车道",
+      "B": "直行和向左转弯",
+      "C": "允许掉头",
+      "D": "立体交叉直行和左转弯"
+    },
+    "answer": "A",
+    "note": "蓝底方形前+左箭头=直行和左转合用车道。"
+  },
+  {
+    "id": 75,
+    "question": "【标志】黄底黑边三角形——图案为一辆自行车，这是什么标志？",
+    "options": {
+      "A": "非机动车车道",
+      "B": "注意非机动车",
+      "C": "非机动车行驶",
+      "D": "禁止非机动车通行"
+    },
+    "answer": "B",
+    "note": "黄底三角+自行车=注意非机动车。蓝底圆形才是非机动车道。"
+  },
+  {
+    "id": 76,
+    "question": "【手势】交通警察左臂向左平伸，掌心向前；右臂向右平伸，掌心向前——这是什么信号？",
+    "options": {
+      "A": "左转弯信号",
+      "B": "直行信号",
+      "C": "停止信号",
+      "D": "靠边停车信号"
+    },
+    "answer": "B",
+    "note": "双臂平伸=直行信号。"
+  },
+  {
+    "id": 77,
+    "question": "【标志】红底白字——一个\"停\"字，这是什么标志？",
+    "options": {
+      "A": "停车让行",
+      "B": "减速让行",
+      "C": "禁止停车",
+      "D": "临时停车"
+    },
+    "answer": "A",
+    "note": "红底\"停\"=停车让行。倒三角\"让\"=减速让行。"
+  },
+  {
+    "id": 78,
+    "question": "【标志】蓝底圆形——图案为一个白色箭头向上，这是什么标志？",
+    "options": {
+      "A": "直行",
+      "B": "单行路（直行）",
+      "C": "靠右侧行驶",
+      "D": "允许掉头"
+    },
+    "answer": "A",
+    "note": "蓝底圆形+白箭头=直行（必须直行）。方形才是单行路。"
+  },
+  {
+    "id": 79,
+    "question": "【灯光】机动车仪表盘上亮起红色油壶状指示灯，表示什么？",
+    "options": {
+      "A": "发动机温度过高",
+      "B": "机油压力过低",
+      "C": "燃油不足",
+      "D": "制动系统故障"
+    },
+    "answer": "B",
+    "note": "红色油壶=机油压力过低。立即停车！"
+  },
+  {
+    "id": 80,
+    "question": "【标线】路面上一根白色实线和一根白色虚线并列，这是什么标线？",
+    "options": {
+      "A": "可变导向车道线",
+      "B": "潮汐车道线",
+      "C": "公交车专用车道线",
+      "D": "非机动车道线"
+    },
+    "answer": "C",
+    "note": "白实线+白虚线并列=公交车专用车道线。"
+  },
+  {
+    "id": 81,
+    "question": "【标志】白底红圈——图案为一个人牵着小孩，这是什么标志？",
+    "options": {
+      "A": "注意儿童",
+      "B": "步行",
+      "C": "行人禁止通行",
+      "D": "人行横道"
+    },
+    "answer": "B",
+    "note": "红圈+大人牵小孩=步行（步行街）。蓝底才是人行横道。"
+  },
+  {
+    "id": 82,
+    "question": "【手势】交通警察右臂向前平伸，掌心向左；左臂向前下方平伸，掌心向下——这是什么信号？",
+    "options": {
+      "A": "右转弯信号",
+      "B": "减速慢行信号",
+      "C": "靠边停车信号",
+      "D": "左转弯待转信号"
+    },
+    "answer": "B",
+    "note": "右臂前伸+左臂下伸=减速慢行信号。"
+  },
+  {
+    "id": 83,
+    "question": "【标志】蓝底方形——图案为一个白色\"P\"字，P字下方有一条红色斜杠，这是什么标志？",
+    "options": {
+      "A": "停车场",
+      "B": "禁止停车",
+      "C": "禁止长时间停车",
+      "D": "紧急停车带"
+    },
+    "answer": "C",
+    "note": "蓝底P+红斜杠=禁止长时间停车。红圈✕才是完全禁止停车。"
+  },
+  {
+    "id": 84,
+    "question": "【灯光】机动车仪表盘上亮起红色感叹号，外圈为括号状\"（!）\"，这是什么指示灯？",
+    "options": {
+      "A": "ABS故障",
+      "B": "制动系统故障",
+      "C": "安全气囊故障",
+      "D": "机油压力过低"
+    },
+    "answer": "B",
+    "note": "红色(!)+括号=制动系统故障。严重！"
+  },
+  {
+    "id": 85,
+    "question": "【标志】黄底黑边三角形——图案为一个\"!\"，这是什么标志？",
+    "options": {
+      "A": "危险路段",
+      "B": "注意危险",
+      "C": "事故多发路段",
+      "D": "前方施工"
+    },
+    "answer": "B",
+    "note": "黄底三角+感叹号=注意危险。"
+  },
+  {
+    "id": 86,
+    "question": "【标线】路口内有黄色网格线，这种标线在路口表示什么？",
+    "options": {
+      "A": "允许临时停车",
+      "B": "禁止任何原因停车",
+      "C": "仅供公交车停靠",
+      "D": "人行横道"
+    },
+    "answer": "B",
+    "note": "路口网状线=禁止任何原因停车（红灯也不能停上面）。"
+  },
+  {
+    "id": 87,
+    "question": "【标志】蓝底方形——图案为白色箭头向右，这是什么标志？",
+    "options": {
+      "A": "向右转弯",
+      "B": "靠右侧道路行驶",
+      "C": "单行路（向右）",
+      "D": "右侧通行"
+    },
+    "answer": "C",
+    "note": "蓝底方形+箭头=单行路。圆形+箭头=必须直行。"
+  },
+  {
+    "id": 88,
+    "question": "【手势】交通警察左臂向上伸直，掌心向前——这是什么信号？",
+    "options": {
+      "A": "停止信号",
+      "B": "减速慢行信号",
+      "C": "左转弯待转信号",
+      "D": "示意车辆靠边停车"
+    },
+    "answer": "C",
+    "note": "左臂上举=左转弯待转信号。"
+  },
+  {
+    "id": 89,
+    "question": "【标志】白底红圈——图案为一个喇叭，这是什么标志？",
+    "options": {
+      "A": "禁止鸣喇叭",
+      "B": "注意鸣喇叭",
+      "C": "解除禁止鸣喇叭",
+      "D": "鸣喇叭示意"
+    },
+    "answer": "A",
+    "note": "红圈+喇叭=禁止鸣喇叭。"
+  },
+  {
+    "id": 90,
+    "question": "【灯光】机动车仪表盘上亮起一个人形图案+圆形气囊状指示灯（红色），这表示什么？",
+    "options": {
+      "A": "安全带未系",
+      "B": "安全气囊故障",
+      "C": "车门未关",
+      "D": "发动机故障"
+    },
+    "answer": "B",
+    "note": "人形+气囊=安全气囊故障（SRS故障灯）。"
+  }
+];
+
+  // 映射关系：题号与 signs 文件夹图片的关联
+  const imageMap = {
+    4: 'signs/05_最高限速40.png',
+    8: 'signs/09_停车场P.png',
+    14: 'signs/01_禁止驶入.png',
+    18: 'signs/07_国道G2.png',
+    25: 'signs/02_禁止停车_X.png',
+    46: 'signs/11_注意行人.png',
+    73: 'signs/12_人行横道.png',
+    77: 'signs/16_停车让行.png',
+    78: 'signs/13_直行.png',
+    80: 'signs/19_公交专用道.png',
+    81: 'signs/20_注意儿童.png',
+    85: 'signs/15_注意危险.png',
+    89: 'signs/10_禁止鸣喇叭.png'
+  };
+
+  // 映射关系：题号与内联精美 SVG 绘制
+  const svgMap = {
+    71: `<svg viewBox="0 0 120 120" width="120" height="120"><polygon points="60,15 110,100 10,100" fill="#f9a825" stroke="#333" stroke-width="4"/><path d="M 60,45 L 75,70 M 60,45 L 45,70" stroke="#333" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`, // 注意急弯路
+    72: `<svg viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="60" r="45" fill="white" stroke="#d32f2f" stroke-width="8"/><rect x="40" y="60" width="40" height="15" rx="3" fill="#333"/><path d="M 45,60 L 50,48 L 70,48 L 75,60 Z" fill="#333"/><circle cx="48" cy="76" r="4" fill="white"/><circle cx="72" cy="76" r="4" fill="white"/></svg>`, // 禁止机动车
+    74: `<svg viewBox="0 0 120 120" width="120" height="120"><rect x="15" y="15" width="90" height="90" rx="8" fill="#1976d2"/><path d="M 60,25 L 55,35 L 58,35 L 58,85 L 62,85 L 62,35 L 65,35 Z" fill="white"/><path d="M 60,60 Q 40,60 40,45 L 35,48 L 40,35 L 45,48 L 40,45 Q 40,56 58,56 Z" fill="white"/></svg>`, // 直行和左转合用车道
+    75: `<svg viewBox="0 0 120 120" width="120" height="120"><polygon points="60,15 110,100 10,100" fill="#f9a825" stroke="#333" stroke-width="4"/><circle cx="45" cy="70" r="10" fill="none" stroke="#333" stroke-width="3"/><circle cx="75" cy="70" r="10" fill="none" stroke="#333" stroke-width="3"/><line x1="45" y1="70" x2="60" y2="55" stroke="#333" stroke-width="3"/><line x1="75" y1="70" x2="65" y2="50" stroke="#333" stroke-width="3"/><line x1="60" y1="55" x2="65" y2="50" stroke="#333" stroke-width="3"/><line x1="60" y1="55" x2="50" y2="70" stroke="#333" stroke-width="3"/><line x1="65" y1="50" x2="60" y2="40" stroke="#333" stroke-width="3"/></svg>`, // 注意非机动车
+    79: `<svg viewBox="0 0 120 120" width="120" height="120"><path d="M 30,70 L 80,70 Q 90,70 90,60 L 90,55 L 75,55 L 75,50 L 95,50 L 95,65 Q 95,78 80,78 L 30,78 Q 20,78 20,68 L 20,55 Q 20,45 35,45 L 50,45 L 45,52 L 35,52 Q 28,52 28,58 L 28,68 Q 28,70 30,70 Z" fill="#d32f2f"/><path d="M 75,52 L 100,30 L 105,35 L 80,57 Z" fill="#d32f2f"/><circle cx="20" cy="35" r="5" fill="#d32f2f"/></svg>`, // 机油压力过低
+    83: `<svg viewBox="0 0 120 120" width="120" height="120"><rect x="15" y="15" width="90" height="90" rx="8" fill="#1976d2"/><text x="60" y="78" text-anchor="middle" font-size="54" font-weight="bold" fill="white" font-family="Arial">P</text><line x1="28" y1="28" x2="92" y2="92" stroke="#d32f2f" stroke-width="8"/></svg>`, // 禁止长时间停车
+    84: `<svg viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="60" r="28" fill="none" stroke="#d32f2f" stroke-width="6"/><path d="M 60,42 L 60,63" stroke="#d32f2f" stroke-width="6" stroke-linecap="round"/><circle cx="60" cy="74" r="3.5" fill="#d32f2f"/><path d="M 23,40 A 40,40 0 0,0 23,80" fill="none" stroke="#d32f2f" stroke-width="6" stroke-linecap="round"/><path d="M 97,40 A 40,40 0 0,1 97,80" fill="none" stroke="#d32f2f" stroke-width="6" stroke-linecap="round"/></svg>`, // 制动系统故障
+    86: `<svg viewBox="0 0 120 120" width="120" height="120" style="background:#555; border-radius: 8px;"><rect x="15" y="15" width="90" height="90" fill="none" stroke="#f9a825" stroke-width="6"/><line x1="15" y1="35" x2="90" y2="105" stroke="#f9a825" stroke-width="3"/><line x1="15" y1="55" x2="70" y2="105" stroke="#f9a825" stroke-width="3"/><line x1="15" y1="75" x2="45" y2="105" stroke="#f9a825" stroke-width="3"/><line x1="35" y1="15" x2="105" y2="85" stroke="#f9a825" stroke-width="3"/><line x1="55" y1="15" x2="105" y2="65" stroke="#f9a825" stroke-width="3"/><line x1="75" y1="15" x2="105" y2="45" stroke="#f9a825" stroke-width="3"/><line x1="105" y1="35" x2="30" y2="105" stroke="#f9a825" stroke-width="3"/><line x1="105" y1="55" x2="50" y2="105" stroke="#f9a825" stroke-width="3"/><line x1="105" y1="75" x2="75" y2="105" stroke="#f9a825" stroke-width="3"/><line x1="85" y1="15" x2="15" y2="85" stroke="#f9a825" stroke-width="3"/><line x1="65" y1="15" x2="15" y2="65" stroke="#f9a825" stroke-width="3"/><line x1="45" y1="15" x2="15" y2="45" stroke="#f9a825" stroke-width="3"/></svg>`, // 黄色网格线
+    87: `<svg viewBox="0 0 120 120" width="120" height="120"><rect x="15" y="15" width="90" height="90" rx="8" fill="#1976d2"/><path d="M 25,60 L 85,60 M 85,60 L 70,45 M 85,60 L 70,75" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`, // 单行路向右
+    90: `<svg viewBox="0 0 120 120" width="120" height="120"><circle cx="45" cy="40" r="8" fill="#d32f2f"/><path d="M 40,55 A 15,15 0 0,1 60,65 L 55,90 M 42,55 L 30,80" fill="none" stroke="#d32f2f" stroke-width="6" stroke-linecap="round"/><circle cx="78" cy="55" r="14" fill="none" stroke="#d32f2f" stroke-width="4"/><path d="M 68,38 L 74,43 M 70,30 L 78,35" stroke="#d32f2f" stroke-width="3" stroke-linecap="round"/></svg>` // 安全气囊故障
+  };
+
+  // 全局状态管理
+  let currentMode = 'study'; // study, exam, wrong
+  let currentIdx = 0;
+  let activeQuestions = [...questions];
+  let userAnswers = {}; // {questionId: selectedOption}
+  let markedQuestions = {}; // {questionId: true/false}
+  let examTimer = null;
+  let examTimeLeft = 45 * 60; // 45分钟
+  let hasSubmittedExam = false;
+
+  // 初始化错题本 (localStorage)
+  let wrongQuestions = JSON.parse(localStorage.getItem('wing_wrong_questions')) || [];
+
+  window.onload = function() {
+    updateWrongCount();
+    initAnswerSheet();
+    loadQuestion(0);
+    updateProgress();
+  };
+
+  // 模式切换
+  function switchMode(mode) {
+    if (mode === 'exam' && currentMode !== 'exam') {
+      if (!confirm('确定切换到“模拟考试”模式吗？这将开始45分钟倒计时并清空当前答题卡。')) return;
+      startExamMode();
+    } else if (mode === 'study') {
+      stopExamTimer();
+      currentMode = 'study';
+      activeQuestions = [...questions];
+      hasSubmittedExam = false;
+      document.getElementById('exam-score-row').style.display = 'none';
+      document.getElementById('btn-submit-exam').style.display = 'none';
+      document.getElementById('timer-box').style.display = 'none';
+    } else if (mode === 'wrong') {
+      if (wrongQuestions.length === 0) {
+        alert('当前错题本为空，太棒了！请先在练习或考试中积累错题。');
+        return;
+      }
+      stopExamTimer();
+      currentMode = 'wrong';
+      activeQuestions = questions.filter(q => wrongQuestions.includes(q.id));
+      hasSubmittedExam = false;
+      document.getElementById('exam-score-row').style.display = 'none';
+      document.getElementById('btn-submit-exam').style.display = 'none';
+      document.getElementById('timer-box').style.display = 'none';
+    }
+
+    // 更新UI高亮
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`btn-mode-${mode}`).classList.add('active');
+
+    currentIdx = 0;
+    initAnswerSheet();
+    loadQuestion(0);
+    updateProgress();
+  }
+
+  // 开启模拟考试
+  function startExamMode() {
+    currentMode = 'exam';
+    userAnswers = {};
+    hasSubmittedExam = false;
+    activeQuestions = shuffle([...questions]); // 随机乱序，更像真实考试
+    examTimeLeft = 45 * 60;
+    
+    document.getElementById('exam-score-row').style.display = 'flex';
+    document.getElementById('side-score').innerText = '进行中';
+    document.getElementById('btn-submit-exam').style.display = 'inline-flex';
+    document.getElementById('timer-box').style.display = 'flex';
+    
+    startExamTimer();
+  }
+
+  function startExamTimer() {
+    stopExamTimer();
+    updateTimerDisplay();
+    examTimer = setInterval(() => {
+      examTimeLeft--;
+      updateTimerDisplay();
+      if (examTimeLeft <= 0) {
+        clearInterval(examTimer);
+        alert('考试时间到！系统已自动为您交卷。');
+        finishExam();
+      }
+    }, 1000);
+  }
+
+  function stopExamTimer() {
+    if (examTimer) clearInterval(examTimer);
+  }
+
+  function updateTimerDisplay() {
+    const mins = Math.floor(examTimeLeft / 60);
+    const secs = examTimeLeft % 60;
+    document.getElementById('time-display').innerText = 
+      `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // 数组洗牌
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // 初始化答题卡
+  function initAnswerSheet() {
+    const grid = document.getElementById('answer-sheet');
+    grid.innerHTML = '';
+    
+    document.getElementById('side-total').innerText = `${activeQuestions.length} 题`;
+
+    activeQuestions.forEach((q, idx) => {
+      const item = document.createElement('div');
+      item.className = 'grid-item';
+      item.id = `sheet-${idx}`;
+      item.innerText = idx + 1;
+      item.onclick = () => jumpTo(idx);
+      
+      // 背题模式/考试模式已答题标记
+      if (userAnswers[q.id]) {
+        item.classList.add('answered');
+      }
+      
+      if (markedQuestions[q.id]) {
+        item.classList.add('marked');
+      }
+
+      grid.appendChild(item);
+    });
+  }
+
+  // 加载单道题目
+  function loadQuestion(idx) {
+    if (activeQuestions.length === 0) return;
+    currentIdx = idx;
+    const q = activeQuestions[idx];
+
+    // 更新答题卡高亮
+    document.querySelectorAll('.grid-item').forEach(item => item.classList.remove('active'));
+    const currentSheet = document.getElementById(`sheet-${idx}`);
+    if (currentSheet) currentSheet.classList.add('active');
+
+    // 编号与标签
+    document.getElementById('q-number').innerText = `第 ${idx + 1} / ${activeQuestions.length} 题 (ID: #${q.id})`;
+    
+    // 自动判定标签类别
+    let category = "高频考点";
+    if (q.question.includes('标志')) category = "交通标志";
+    else if (q.question.includes('标线')) category = "路面标线";
+    else if (q.question.includes('手势')) category = "交警手势";
+    else if (q.question.includes('灯光') || q.question.includes('仪表盘')) category = "仪表灯光";
+    else if (q.question.includes('扣分') || q.question.includes('记分') || q.question.includes('记多少分')) category = "扣分记分";
+    else if (q.question.includes('高速')) category = "高速公路";
+    document.getElementById('q-category').innerText = category;
+
+    // 标题
+    document.getElementById('q-title').innerText = q.question;
+
+    // 图片/SVG 渲染
+    const visualBox = document.getElementById('q-visual');
+    visualBox.innerHTML = '';
+    visualBox.style.display = 'none';
+
+    if (imageMap[q.id]) {
+      visualBox.style.display = 'flex';
+      const img = document.createElement('img');
+      img.src = imageMap[q.id];
+      img.alt = q.question;
+      // 容错处理：若图片丢失，用优雅的内联 SVG 样式提示
+      img.onerror = function() {
+        visualBox.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-secondary); border: 1px dashed var(--border); border-radius: 8px;">
+          🖼️ 图片资源 [${imageMap[q.id]}] 正在加载... (请确保 signs 文件夹与本 HTML 处于同一目录)
+        </div>`;
+      };
+      visualBox.appendChild(img);
+    } else if (svgMap[q.id]) {
+      visualBox.style.display = 'flex';
+      visualBox.innerHTML = svgMap[q.id];
+    } else if (q.question.includes('手势')) {
+      // 针对手势题，若无具体图，渲染一个交警指挥的动感毛玻璃占位框
+      visualBox.style.display = 'flex';
+      visualBox.innerHTML = `<div style="padding: 24px; text-align: center; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.2); background: rgba(59, 130, 246, 0.05); width: 100%; display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 28px;">👮</span>
+        <strong style="color: var(--accent); font-size: 14px;">交警现场手势指挥题</strong>
+        <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">请根据题干中交警的“手臂位置”和“掌心朝向”进行精准识图判断。</p>
+      </div>`;
+    }
+
+    // 渲染选项
+    const optionsBox = document.getElementById('q-options');
+    optionsBox.innerHTML = '';
+
+    const sortedKeys = ['A', 'B', 'C', 'D'];
+    sortedKeys.forEach(key => {
+      if (!q.options[key]) return;
+      
+      const item = document.createElement('button');
+      item.className = 'option-item';
+      
+      const isSelected = userAnswers[q.id] === key;
+      if (isSelected) item.classList.add('selected');
+
+      // 背题模式或已提交考试状态：显示对错高亮
+      const isExamShowResult = (currentMode === 'exam' && hasSubmittedExam);
+      const isStudyMode = (currentMode === 'study' || currentMode === 'wrong');
+
+      if (isExamShowResult || isStudyMode) {
+        item.classList.add('disabled');
+        if (isSelected) {
+          if (key === q.answer) {
+            item.className = 'option-item correct';
+          } else {
+            item.className = 'option-item incorrect';
+          }
+        } else if (key === q.answer) {
+          // 哪怕没选，也把正确选项标绿，方便学习
+          item.className = 'option-item correct';
+        }
+      }
+
+      item.onclick = () => selectOption(key);
+      item.innerHTML = `<span class="option-badge">${key}</span> <span>${q.options[key]}</span>`;
+      optionsBox.appendChild(item);
+    });
+
+    // 渲染解析区 (背题模式或已提交考试状态显示)
+    const expBox = document.getElementById('q-explanation');
+    const expText = document.getElementById('q-explanation-text');
+    
+    const isExamShowResult = (currentMode === 'exam' && hasSubmittedExam);
+    const isStudyMode = (currentMode === 'study' || currentMode === 'wrong');
+
+    if (isExamShowResult || isStudyMode) {
+      expBox.style.display = 'block';
+      expText.innerText = q.note || '暂无详细考点剖析，请熟记正确答案。';
+    } else {
+      expBox.style.display = 'none';
+    }
+
+    // 按钮文案与状态
+    document.getElementById('btn-prev').disabled = idx === 0;
+    document.getElementById('btn-next').disabled = idx === activeQuestions.length - 1;
+    
+    // 标记难题状态
+    const markBtn = document.getElementById('btn-mark');
+    if (markedQuestions[q.id]) {
+      markBtn.style.backgroundColor = 'var(--warning)';
+      markBtn.style.color = 'white';
+      markBtn.innerText = '取消标记';
+    } else {
+      markBtn.style.backgroundColor = 'transparent';
+      markBtn.style.color = 'var(--warning)';
+      markBtn.innerText = '标记此题';
+    }
+  }
+
+  // 选中答案
+  function selectOption(key) {
+    const q = activeQuestions[currentIdx];
+    
+    // 考试已提交或在只读状态下不允许二次选择
+    if (currentMode === 'exam' && hasSubmittedExam) return;
+
+    userAnswers[q.id] = key;
+    
+    // 答题卡状态高亮
+    const sheetItem = document.getElementById(`sheet-${currentIdx}`);
+    if (sheetItem) {
+      sheetItem.classList.add('answered');
+    }
+
+    updateProgress();
+
+    // 重新加载当前题 (触发高亮和背题模式的解析展示)
+    loadQuestion(currentIdx);
+
+    // 背题模式或错题本模式下，如果选错了，自动加入错题本；选对且原先在错题本，则清除
+    if (currentMode === 'study' || currentMode === 'wrong') {
+      if (key !== q.answer) {
+        addToWrong(q.id);
+      } else {
+        removeFromWrong(q.id);
+      }
+    }
+
+    // 答题后自动滑向下一题 (延迟一小会儿，给个顺滑的反馈感)
+    if (currentMode === 'exam' && currentIdx < activeQuestions.length - 1) {
+      setTimeout(() => {
+        navigate(1);
+      }, 300);
+    }
+  }
+
+  // 导航
+  function navigate(dir) {
+    const newIdx = currentIdx + dir;
+    if (newIdx >= 0 && newIdx < activeQuestions.length) {
+      loadQuestion(newIdx);
+    }
+  }
+
+  function jumpTo(idx) {
+    loadQuestion(idx);
+  }
+
+  // 标记难题
+  function toggleMark() {
+    const q = activeQuestions[currentIdx];
+    markedQuestions[q.id] = !markedQuestions[q.id];
+    
+    const sheetItem = document.getElementById(`sheet-${currentIdx}`);
+    if (sheetItem) {
+      if (markedQuestions[q.id]) {
+        sheetItem.classList.add('marked');
+      } else {
+        sheetItem.classList.remove('marked');
+      }
+    }
+
+    loadQuestion(currentIdx);
+  }
+
+  // 进度条与数据看板
+  function updateProgress() {
+    const total = activeQuestions.length;
+    if (total === 0) return;
+    
+    let answeredCount = 0;
+    activeQuestions.forEach(q => {
+      if (userAnswers[q.id]) answeredCount++;
+    });
+
+    const percent = Math.round((answeredCount / total) * 100);
+    document.getElementById('progress-percent').innerText = `${percent}%`;
+    document.getElementById('progress-bar-fill').style.width = `${percent}%`;
+    document.getElementById('side-answered').innerText = `${answeredCount} 题`;
+  }
+
+  // 错题本逻辑
+  function addToWrong(id) {
+    if (!wrongQuestions.includes(id)) {
+      wrongQuestions.push(id);
+      localStorage.setItem('wing_wrong_questions', JSON.stringify(wrongQuestions));
+      updateWrongCount();
+    }
+  }
+
+  function removeFromWrong(id) {
+    const idx = wrongQuestions.indexOf(id);
+    if (idx > -1) {
+      wrongQuestions.splice(idx, 1);
+      localStorage.setItem('wing_wrong_questions', JSON.stringify(wrongQuestions));
+      updateWrongCount();
+      
+      // 如果当前正处于错题本模式，实时移除题目
+      if (currentMode === 'wrong') {
+        activeQuestions = questions.filter(q => wrongQuestions.includes(q.id));
+        if (activeQuestions.length === 0) {
+          alert('恭喜你，错题本已全部清空！自动切回背题模式。');
+          switchMode('study');
+        } else {
+          currentIdx = Math.min(currentIdx, activeQuestions.length - 1);
+          initAnswerSheet();
+          loadQuestion(currentIdx);
+          updateProgress();
+        }
+      }
+    }
+  }
+
+  function updateWrongCount() {
+    document.getElementById('wrong-count').innerText = wrongQuestions.length;
+  }
+
+  // 模拟考试交卷评估
+  function finishExam() {
+    stopExamTimer();
+    hasSubmittedExam = true;
+    
+    // 计算得分 (每题以100分制等比换算，共90题，每题1.11分。真实科目一100题，这里90题我们就按 (对题数/90)*100 换算分值)
+    let correctCount = 0;
+    let wrongList = [];
+
+    activeQuestions.forEach(q => {
+      if (userAnswers[q.id] === q.answer) {
+        correctCount++;
+      } else {
+        wrongList.push(q.id);
+        addToWrong(q.id); // 考错的题无缝进入错题本
+      }
+    });
+
+    const finalScore = Math.round((correctCount / activeQuestions.length) * 100);
+    
+    // 更新侧边栏分数
+    const sideScore = document.getElementById('side-score');
+    sideScore.innerText = `${finalScore} 分`;
+    if (finalScore >= 90) {
+      sideScore.style.color = 'var(--success)';
+    } else {
+      sideScore.style.color = 'var(--error)';
+    }
+
+    // 渲染答题卡对错高亮
+    activeQuestions.forEach((q, idx) => {
+      const sheetItem = document.getElementById(`sheet-${idx}`);
+      if (sheetItem) {
+        sheetItem.classList.remove('answered');
+        if (userAnswers[q.id] === q.answer) {
+          sheetItem.classList.add('correct');
+        } else {
+          sheetItem.classList.add('incorrect');
+        }
+      }
+    });
+
+    // 弹出结算报告
+    const modal = document.getElementById('result-modal');
+    const scoreVal = document.getElementById('result-score');
+    const statusText = document.getElementById('result-status-text');
+    const scoreCircle = document.getElementById('result-score-circle');
+    
+    scoreVal.innerText = finalScore;
+    
+    if (finalScore >= 90) {
+      statusText.innerText = "🎉 祝贺通过！";
+      statusText.className = "result-status status-pass";
+      scoreCircle.style.borderColor = "var(--success)";
+      document.getElementById('result-stat-details').innerText = 
+        `答对题数: ${correctCount} / ${activeQuestions.length}。实力拉满，继续保持！`;
+    } else {
+      statusText.innerText = "⚠️ 未及格，需加把劲！";
+      statusText.className = "result-status status-fail";
+      scoreCircle.style.borderColor = "var(--error)";
+      document.getElementById('result-stat-details').innerText = 
+        `答错的 ${wrongList.length} 道题已自动归入错题本，建议针对性攻克！`;
+    }
+
+    modal.style.display = 'flex';
+    
+    // 隐藏交卷按钮
+    document.getElementById('btn-submit-exam').style.display = 'none';
+
+    // 刷新当前题显示答案解析
+    loadQuestion(currentIdx);
+  }
+
+  function closeResultModal() {
+    document.getElementById('result-modal').style.display = 'none';
+  }
+
+  function restartExam() {
+    closeResultModal();
+    startExamMode();
+  }
+
+  function copyReport() {
+    const correctCount = activeQuestions.filter(q => userAnswers[q.id] === q.answer).length;
+    const wrongQuestions = activeQuestions.filter(q => userAnswers[q.id] && userAnswers[q.id] !== q.answer);
+    const unanswered = activeQuestions.filter(q => !userAnswers[q.id]);
+    const finalScore = Math.round((correctCount / activeQuestions.length) * 100);
+    const passed = finalScore >= 90;
+    const now = new Date();
+    const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    
+    let report = '📊 科目一成绩 · 智能模拟考试\\n';
+    report += '交卷时间: ' + dateStr + '\\n';
+    report += '题目数: ' + activeQuestions.length + ' | 分数: ' + finalScore + ' | 合格线: 90 | ' + (passed ? '✅ 合格' : '❌ 未合格') + '\\n';
+    report += '答对: ' + correctCount + ' | 答错: ' + wrongQuestions.length + ' | 未答: ' + unanswered.length + '\\n';
+    
+    if (wrongQuestions.length > 0) {
+      report += '\\n错题:\\n';
+      wrongQuestions.forEach(q => {
+        const userAns = userAnswers[q.id];
+        const correctAns = q.answer;
+        report += '  Q' + q.id + '(错选' + userAns + '→应为' + correctAns + ') ';
+        report += (q.options ? q.options[correctAns] : q.question || '').substring(0, 40) + '\\n';
+      });
+    }
+    if (unanswered.length > 0) {
+      report += '\\n未答: ' + unanswered.map(q => 'Q' + q.id).join(', ') + '\\n';
+    }
+    report += '\\n---\\n来自: Hermes 驾考助手\\n发给 Wing 即可自动更新错题本';
+    
+    navigator.clipboard.writeText(report).then(() => {
+      const btn = event.target;
+      const orig = btn.innerText;
+      btn.innerText = '✅ 已复制！发给 Wing';
+      btn.style.background = '#059669';
+      setTimeout(() => { btn.innerText = orig; btn.style.background = '#10b981'; }, 2000);
+    }).catch(() => {
+      alert('复制失败，请手动截图发送给 Wing');
+    });
+  }
+
+  // 主题切换
+  function toggleTheme() {
+    const body = document.body;
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    const btn = document.getElementById('theme-toggle');
+
+    if (isDark) {
+      body.setAttribute('data-theme', 'light');
+      btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+    } else {
+      body.setAttribute('data-theme', 'dark');
+      btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    }
+  }
+
+  // 重置系统
+  function resetSystem() {
+    if (confirm('确认重置吗？这将清空错题本、标记记录以及所有答题数据！')) {
+      localStorage.removeItem('wing_wrong_questions');
+      wrongQuestions = [];
+      userAnswers = {};
+      markedQuestions = {};
+      hasSubmittedExam = false;
+      updateWrongCount();
+      
+      if (currentMode === 'wrong') {
+        switchMode('study');
+      } else {
+        initAnswerSheet();
+        loadQuestion(0);
+        updateProgress();
+      }
+      alert('系统进度已重置。');
+    }
+  }
+</script>
+
+</body>
+</html>
