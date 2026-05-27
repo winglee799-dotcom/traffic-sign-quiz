@@ -49,6 +49,8 @@
   .tag-speed { background: #1f3b1f; color: #4ade80; }
   .tag-light { background: #3b2f1f; color: #fbbf24; }
   .q-text { font-size: 17px; font-weight: 500; line-height: 1.7; margin-bottom: 20px; }
+  .sign-img { text-align: center; margin: 16px 0; }
+  .sign-img svg { width: 120px; height: 120px; }
   .options { display: flex; flex-direction: column; gap: 10px; }
   .opt {
     display: flex; align-items: center; gap: 12px; padding: 14px 18px;
@@ -121,6 +123,7 @@
   <div style="display:flex;flex-direction:column;">
     <div class="question-card" id="q-card">
       <div class="q-num" id="q-num"></div>
+      <div class="sign-img" id="sign-img"></div>
       <div class="q-text" id="q-text"></div>
       <div class="options" id="q-opts"></div>
       <div class="hint-box" id="q-hint"></div>
@@ -193,6 +196,20 @@ function getTagClass(tag) {
   return 'tag-light';
 }
 
+function renderSignImg(id) {
+  const svg = (s) => `<svg viewBox="0 0 120 120">${s}</svg>`;
+  switch(id) {
+    case 53: return svg(`<circle cx="60" cy="60" r="45" fill="#1976d2"/><polygon points="60,22 74,55 64,55 64,88 56,88 56,55 46,55" fill="#fff"/>`);
+    case 56: return svg(`<polygon points="60,8 110,102 10,102" fill="#f9a825" stroke="#333" stroke-width="2"/><path d="M32,68 Q46,48 60,68 Q74,88 88,68" fill="none" stroke="#333" stroke-width="4"/>`);
+    case 59: return svg(`<circle cx="60" cy="60" r="50" fill="#fff" stroke="#d63031" stroke-width="5"/><rect x="28" y="34" width="64" height="36" rx="6" fill="#333"/><circle cx="42" cy="78" r="8" fill="#333"/><circle cx="78" cy="78" r="8" fill="#333"/><rect x="28" y="44" width="20" height="14" rx="3" fill="#88c0d0"/><rect x="72" y="44" width="20" height="14" rx="3" fill="#88c0d0"/>`);
+    case 62: return svg(`<polygon points="60,8 110,102 10,102" fill="#f9a825" stroke="#333" stroke-width="2"/><path d="M48,80 Q50,55 52,45 Q55,35 60,30 Q65,35 68,45 Q70,55 72,80" fill="#e74c3c"/><path d="M54,48 Q58,38 60,35 Q62,38 66,48" fill="#f39c12"/><text x="60" y="72" text-anchor="middle" font-size="20" fill="#f39c12">🔥</text>`);
+    case 65: return svg(`<rect x="14" y="18" width="92" height="84" rx="8" fill="#1976d2"/><polygon points="32,60 72,30 72,50 88,50 88,70 72,70 72,90" fill="#fff"/>`);
+    case 68: return svg(`<polygon points="60,8 110,102 10,102" fill="#f9a825" stroke="#333" stroke-width="2"/><circle cx="46" cy="48" r="10" fill="#e74c3c"/><circle cx="60" cy="38" r="10" fill="#f1c40f"/><circle cx="74" cy="48" r="10" fill="#2ecc71"/><rect x="42" y="64" width="36" height="14" rx="3" fill="#333"/><line x1="60" y1="78" x2="60" y2="92" stroke="#333" stroke-width="4"/>`);
+    case 70: return svg(`<circle cx="60" cy="60" r="45" fill="#fff" stroke="#333" stroke-width="3"/><text x="60" y="52" text-anchor="middle" font-size="30" font-weight="bold" fill="#333" font-family="Arial">80</text><line x1="20" y1="62" x2="100" y2="62" stroke="#333" stroke-width="3"/>`);
+    default: return '';
+  }
+}
+
 function renderSheet() {
   const grid = document.getElementById('sheet-grid');
   grid.innerHTML = questions.map((q, i) => {
@@ -214,6 +231,7 @@ function loadQ(idx) {
   const q = questions[idx];
   document.getElementById('q-num').innerHTML = `第 ${idx+1} 题 <span class="q-tag ${getTagClass(q.tag)}">${q.tag}</span>`;
   document.getElementById('q-text').innerText = q.q;
+  document.getElementById('sign-img').innerHTML = q.tag === '标志' ? renderSignImg(q.id) : '';
   const optsDiv = document.getElementById('q-opts');
   optsDiv.innerHTML = Object.entries(q.opts).map(([k,v]) => {
     let cls = 'opt';
