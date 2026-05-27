@@ -2371,6 +2371,14 @@
 
     // 刷新当前题显示答案解析
     loadQuestion(currentIdx);
+    
+    // 自动发送成绩
+    const wqs = activeQuestions.filter(q => userAnswers[q.id] && userAnswers[q.id] !== q.answer);
+    const dets = wqs.map(q => ({id:q.id, userAns:userAnswers[q.id], correctAns:q.answer, desc:(q.question||'').substring(0,30)}));
+    fetch('https://partnership-pillow-mag-separate.trycloudflare.com/submit', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({score:finalScore, correct:correctCount, wrong:wqs.length, unanswered:activeQuestions.length-correctCount-wqs.length, total:activeQuestions.length, title:'科目一 · 智能模拟考试', wrongDetails:dets})
+    }).catch(()=>{});
   }
 
   function closeResultModal() {

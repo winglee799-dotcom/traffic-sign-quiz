@@ -294,6 +294,18 @@ function submitExam() {
   modal.style.display = 'flex';
   loadQ(currentIdx);
   renderSheet();
+  
+  // 自动发送成绩
+  autoSubmit(score, correct, wrong, unanswered, '科目一 · 综合专项 (51-70)');
+}
+
+function autoSubmit(score, correct, wrong, unanswered, title) {
+  const wrongQs = questions.filter(q => userAnswers[q.id] && userAnswers[q.id] !== q.ans);
+  const details = wrongQs.map(q => ({id:q.id, userAns:userAnswers[q.id], correctAns:q.ans, desc:q.opts[q.ans]}));
+  fetch('https://partnership-pillow-mag-separate.trycloudflare.com/submit', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({score, correct, wrong, unanswered, total:questions.length, title, wrongDetails:details})
+  }).catch(()=>{});
 }
 
 function closeModal() { document.getElementById('result-modal').style.display = 'none'; }
