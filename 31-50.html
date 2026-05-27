@@ -571,6 +571,7 @@
   </div>
 </div>
 
+<script src="./telegram-config.js"></script>
 <script>
   // 原始20道标志对比图题库数据
   const originalQuestions = [
@@ -858,6 +859,7 @@
 
   const EXAM_SECONDS = 15 * 60;
   const OPTION_LABELS = ['A', 'B', 'C', 'D'];
+  const TELEGRAM_REPORT_ENDPOINT = (window.QUIZ_TELEGRAM_REPORT_ENDPOINT || '').trim();
   let activeQuestions = [];
   let currentIdx = 0;
   let userAnswers = {};
@@ -865,6 +867,7 @@
   let timerInterval = null;
   let examTimeLeft = EXAM_SECONDS;
   let examDeadline = 0;
+  let examStartedAt = 0;
 
   document.addEventListener('DOMContentLoaded', startNewExam);
 
@@ -895,6 +898,7 @@
     userAnswers = {};
     hasSubmittedExam = false;
     examTimeLeft = EXAM_SECONDS;
+    examStartedAt = Date.now();
     activeQuestions = shuffle(originalQuestions).map(createExamQuestion);
 
     document.getElementById('btn-submit').style.display = 'inline-block';
@@ -930,6 +934,70 @@
     document.getElementById('time-display').innerText =
       `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
     timerBox.classList.toggle('timer-danger', examTimeLeft <= 60);
+  }
+
+  function buildTelegramReportPayload(isForced, correctCount, wrongCount, unansweredCount, finalScore) {
+    const wrongQuestions = activeQuestions
+      .map((q, index) => {
+        const selected = userAnswers[q.id] || '未答';
+        return {
+          index: index + 1,
+          id: q.id,
+          category: q.category,
+          selected,
+          correct: q.answerLabel,
+          question: q.question
+        };
+      })
+      .filter(item => item.selected !== item.correct);
+
+    const usedSeconds = examStartedAt
+      ? Math.max(0, Math.floor((Date.now() - examStartedAt) / 1000))
+      : 0;
+
+    return {
+      score: finalScore,
+      correctCount,
+      wrongCount,
+      unansweredCount,
+      totalCount: activeQuestions.length,
+      usedSeconds,
+      passed: finalScore >= 90,
+      forceSubmit: isForced,
+      wrongQuestions,
+      submittedAtLocal: new Date().toLocaleString('zh-CN', { hour12: false }),
+      page: `${document.title} | ${location.href}`
+    };
+  }
+
+  async function sendTelegramReport(payload) {
+    if (!TELEGRAM_REPORT_ENDPOINT) return;
+    if (!/^https?:\/\//i.test(TELEGRAM_REPORT_ENDPOINT)) return;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+    try {
+      const response = await fetch(TELEGRAM_REPORT_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+        credentials: 'omit',
+        keepalive: true,
+        mode: 'cors',
+        signal: controller.signal
+      });
+      if (!response.ok) {
+        console.warn('Telegram report failed with HTTP status:', response.status);
+      }
+    } catch (error) {
+      console.warn('Telegram report failed:', error);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   function renderSign(q) {
@@ -1246,6 +1314,14 @@
     const prefix = isForced ? '时间到，系统已强制交卷。' : '已交卷。';
     details.innerText = `${prefix} 答对 ${correctCount} 题，答错 ${wrongCount} 题，未答 ${unansweredCount} 题。每题 5 分，满分 100 分，90 分合格。`;
     modal.style.display = 'flex';
+
+    sendTelegramReport(buildTelegramReportPayload(
+      isForced,
+      correctCount,
+      wrongCount,
+      unansweredCount,
+      finalScore
+    ));
   }
 
   function closeResultModal() {
