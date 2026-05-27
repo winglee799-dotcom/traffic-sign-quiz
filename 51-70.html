@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>驾校一点通 · 综合专项训练 (51-70 题)</title>
+<style>
+  :root {
+    --bg-primary: #0b0f19;
+    --bg-secondary: #161f30;
+    --bg-card: #1a2332;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --border: #23354f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-primary); color: var(--text-primary); min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; padding: 16px;
+  }
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; max-width: 960px; padding: 16px 20px;
+    background: var(--bg-secondary); border-radius: 14px; margin-bottom: 16px; border: 1px solid var(--border);
+  }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header h1 span { color: var(--text-secondary); font-size: 13px; font-weight: 400; display: block; margin-top: 2px; }
+  .timer { font-size: 22px; font-weight: 700; color: var(--warning); }
+  .btn { padding: 10px 18px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-submit { background: var(--success); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+  .container { max-width: 960px; width: 100%; display: grid; grid-template-columns: 1fr 260px; gap: 16px; }
+  @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+  
+  .question-card {
+    background: var(--bg-card); border-radius: 14px; padding: 24px; border: 1px solid var(--border); min-height: 380px;
+  }
+  .q-num { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
+  .q-tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .tag-sign { background: #1e3a5f; color: #60a5fa; }
+  .tag-rule { background: #3b1f1f; color: #f87171; }
+  .tag-speed { background: #1f3b1f; color: #4ade80; }
+  .tag-light { background: #3b2f1f; color: #fbbf24; }
+  .q-text { font-size: 17px; font-weight: 500; line-height: 1.7; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+    background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 12px;
+    cursor: pointer; transition: all 0.15s; font-size: 15px;
+  }
+  .opt:hover { border-color: var(--accent); background: rgba(37,99,235,0.08); }
+  .opt.selected { border-color: var(--accent); background: rgba(37,99,235,0.15); }
+  .opt.correct { border-color: var(--success); background: rgba(16,185,129,0.15); }
+  .opt.incorrect { border-color: var(--error); background: rgba(239,68,68,0.15); }
+  .opt-letter {
+    width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; background: var(--border); color: var(--text-secondary); flex-shrink: 0;
+  }
+  .opt.selected .opt-letter { background: var(--accent); color: #fff; }
+  .opt.correct .opt-letter { background: var(--success); color: #fff; }
+  .opt.incorrect .opt-letter { background: var(--error); color: #fff; }
+  
+  .nav-btns { display: flex; gap: 12px; margin-top: 20px; }
+  .nav-btns .btn { flex: 1; }
+  
+  .sheet-card {
+    background: var(--bg-card); border-radius: 14px; padding: 16px; border: 1px solid var(--border); position: sticky; top: 16px;
+  }
+  .sheet-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .sheet-progress { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+  .sheet-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .sheet-item {
+    width: 100%; aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;
+    cursor: pointer; background: var(--bg-secondary); color: var(--text-secondary); transition: all 0.1s;
+  }
+  .sheet-item.current { border-color: var(--accent); color: var(--accent); }
+  .sheet-item.answered { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .sheet-item.correct { background: var(--success); color: #fff; border-color: var(--success); }
+  .sheet-item.incorrect { background: var(--error); color: #fff; border-color: var(--error); }
+  
+  .result-modal {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center;
+  }
+  .result-card {
+    background: var(--bg-card); border-radius: 20px; padding: 32px; text-align: center;
+    max-width: 400px; width: 90%; border: 1px solid var(--border);
+  }
+  .score-circle {
+    width: 130px; height: 130px; border-radius: 50%; border: 6px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 20px auto;
+  }
+  .score-val { font-size: 40px; font-weight: 800; }
+  .score-label { font-size: 14px; color: var(--text-secondary); }
+  .result-status { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+  .status-pass { color: var(--success); }
+  .status-fail { color: var(--error); }
+  .hint-box { background: rgba(37,99,235,0.1); border-radius: 10px; padding: 14px; margin-top: 16px; text-align: left; font-size: 13px; color: var(--text-secondary); line-height: 1.6; display: none; }
+  .hint-box.show { display: block; }
+  .hint-box strong { color: #60a5fa; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>科目一 · 综合专项训练<span>第 51–70 题 | 记分规则 + 限速 + 标志识别</span></h1>
+  <div class="timer" id="timer">20:00</div>
+  <button class="btn btn-outline" onclick="resetExam()">🔄 重新开考</button>
+</div>
+
+<div class="container">
+  <div style="display:flex;flex-direction:column;">
+    <div class="question-card" id="q-card">
+      <div class="q-num" id="q-num"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="q-opts"></div>
+      <div class="hint-box" id="q-hint"></div>
+      <div class="nav-btns">
+        <button class="btn btn-outline" onclick="prevQ()">⬅ 上一题</button>
+        <button class="btn btn-submit" id="btn-submit" onclick="submitExam()">✅ 交卷结算</button>
+        <button class="btn btn-primary" onclick="nextQ()">下一题 ➡</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sheet-card">
+    <div class="sheet-title">📋 考试答题卡</div>
+    <div class="sheet-progress" id="sheet-progress">0 / 20</div>
+    <div class="sheet-grid" id="sheet-grid"></div>
+  </div>
+</div>
+
+<div class="result-modal" id="result-modal">
+  <div class="result-card">
+    <h2>考试成绩评估报告</h2>
+    <div class="score-circle" id="result-score-circle">
+      <span class="score-val" id="result-score">0</span>
+      <span class="score-label">分</span>
+    </div>
+    <div class="result-status" id="result-status-text">未合格</div>
+    <div id="result-stat-details" style="font-size:13px;color:var(--text-secondary);line-height:1.6;"></div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="closeModal()">查看试卷</button>
+      <button class="btn btn-primary" onclick="resetExam()">重新考试</button>
+      <button class="btn" style="background:#10b981;color:#fff;" onclick="copyReport()">📋 复制成绩</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {id:51,tag:"规则",q:"驾驶人在驾驶证有效期满前多长时间内可以申请换证？",opts:{A:"30日内",B:"60日内",C:"90日内",D:"180日内"},ans:"C",hint:"📌 换证在有效期满前90日内申请。提前3个月，别等到最后一天！"},
+  {id:52,tag:"限速",q:"驾驶机动车在高速公路行驶，最低车速不得低于多少？",opts:{A:"50公里/小时",B:"60公里/小时",C:"80公里/小时",D:"100公里/小时"},ans:"B",hint:"📌 高速公路最低限速60km/h。最右侧车道最低60，中间90，左侧110（三车道）。"},
+  {id:53,tag:"标志",q:"🟦 蓝色圆形 + 白色直行箭头 → 这个标志含义是？",opts:{A:"单行路直行",B:"直行车道",C:"只准直行",D:"靠右侧道路行驶"},ans:"C",hint:"📌 蓝圆+箭头=只准直行（命令标志，必须遵守！）。方形蓝底+箭头才是单行路。圆形=强制，方形=指示。"},
+  {id:54,tag:"限速",q:"驾驶机动车在高速公路上行驶，遇能见度低于100米时，最高车速不得超过多少？",opts:{A:"20公里/小时",B:"30公里/小时",C:"40公里/小时",D:"60公里/小时"},ans:"C",hint:"📌 高速能见度限速口诀：200m→60，100m→40，50m→20（尽快驶离）。递减规律：200/100/50 → 60/40/20。"},
+  {id:55,tag:"其他",q:"驾驶机动车在道路上发生故障，需要停车排除故障时，应当立即开启什么灯？",opts:{A:"远光灯",B:"危险报警闪光灯",C:"雾灯",D:"近光灯"},ans:"B",hint:"📌 车辆故障首先开双闪（危险报警闪光灯），然后设警示牌。双闪=求救信号！"},
+  {id:56,tag:"标志",q:"🟡 黄底三角形 + 黑色〰曲线 → 这个标志含义是？",opts:{A:"连续弯路",B:"反向弯路",C:"注意落石",D:"驼峰桥"},ans:"B",hint:"📌 黄三角+〰=反向弯路（一个弯接着反方向弯）。连续弯路是多个N形连续排列，不是〰。"},
+  {id:57,tag:"记分",q:"机动车驾驶人造成事故后逃逸，尚不构成犯罪的，一次记多少分？",opts:{A:"3分",B:"6分",C:"9分",D:"12分"},ans:"D",hint:"📌 肇事逃逸不构成犯罪=12分。构成犯罪就直接吊销+刑事了。逃逸零容忍！"},
+  {id:58,tag:"其他",q:"在道路上发生交通事故，造成人员伤亡的，驾驶人应当首先做什么？",opts:{A:"立即抢救受伤人员",B:"保护现场并报警",C:"将车移到路边",D:"拍照片取证"},ans:"A",hint:"📌 有人伤亡→先救人！生命第一。救人后再报警保护现场。顺序不能错。"},
+  {id:59,tag:"标志",q:"🔴 红圈 + 黑色轿车图案 → 这个标志含义是？",opts:{A:"禁止小型客车通行",B:"禁止机动车通行",C:"禁止载货汽车通行",D:"禁止车辆停放"},ans:"B",hint:"📌 红圈+轿车=禁止机动车通行（所有机动车）。注意和"禁止小型客车"区分——那个是特定车型。"},
+  {id:60,tag:"限速",q:"在没有中心线的城市道路上，最高车速不得超过多少？",opts:{A:"20公里/小时",B:"30公里/小时",C:"40公里/小时",D:"50公里/小时"},ans:"B",hint:"📌 无中心线的城市道路限速30km/h，公路40km/h。口诀：城3公4。有中心线的各加20。"},
+  {id:61,tag:"记分",q:"驾驶机动车在高速公路车道内停车，一次记多少分？",opts:{A:"6分",B:"9分",C:"12分",D:"直接吊销"},ans:"B",hint:"📌 高速车道内停车=9分（新规）！别跟倒车逆行搞混——倒车逆行才是12分。停车9分，倒车12分。"},
+  {id:62,tag:"标志",q:"🟡 黄底三角形 + 🔥火焰 → 这个标志含义是？",opts:{A:"注意危险",B:"注意烟火",C:"注意火灾",D:"易燃易爆"},ans:"B",hint:"📌 黄三角+火焰=注意烟火。注意危险是感叹号！，注意火灾是不同标志。别搞混。"},
+  {id:63,tag:"其他",q:"对未按照国家规定投保交强险的机动车，公安机关交通管理部门可以做什么？",opts:{A:"扣留车辆",B:"扣留驾驶证",C:"罚款并扣车",D:"吊销行驶证"},ans:"A",hint:"📌 没买交强险→扣留车辆。交强险是国家强制险，没买直接扣车。"},
+  {id:64,tag:"限速",q:"驾驶机动车通过铁路道口时，最高车速不得超过多少？",opts:{A:"15公里/小时",B:"20公里/小时",C:"30公里/小时",D:"40公里/小时"},ans:"C",hint:"📌 铁路道口限速30km/h。不管有没有火车，过道口都要减速到30。"},
+  {id:65,tag:"标志",q:"🔵 蓝色方形 + 白色箭头转左 → 这个标志含义是？",opts:{A:"左转车道",B:"向左转弯",C:"靠左侧行驶",D:"单行路向左"},ans:"A",hint:"📌 蓝方+箭头=车道指示（告诉你这条车道可以左转）。蓝圆+箭头=必须遵守的命令标志。方形=车道，圆形=命令。"},
+  {id:66,tag:"其他",q:"雨天对安全行车的主要影响是什么？",opts:{A:"路面湿滑、视线受阻",B:"发动机容易熄火",C:"行驶阻力增大",D:"轮胎易爆"},ans:"A",hint:"📌 雨天两大杀手：路面湿滑（刹车距离变长）+视线受阻（看不清）。最直接影响安全就是这两个。"},
+  {id:67,tag:"记分",q:"驾驶与准驾车型不符的机动车，一次记多少分？",opts:{A:"6分",B:"9分",C:"12分",D:"3分"},ans:"B",hint:"📌 准驾不符=9分（新规，高频考点！）。以前是12分，2022新规降到9分。很多人还在记12分，一定要改过来！"},
+  {id:68,tag:"标志",q:"🟡 黄底三角形 + ⚠红绿灯 → 这个标志含义是？",opts:{A:"注意危险",B:"注意信号灯",C:"前方路口",D:"交通信号灯"},ans:"B",hint:"📌 黄三角+红绿灯图案=注意信号灯（警告前方有红绿灯路口）。不是"交通信号灯"本身。"},
+  {id:69,tag:"其他",q:"机动车在道路上临时停车时，应当遵守什么规定？",opts:{A:"不得逆向停车",B:"按顺行方向停车，车身距路缘不超过30厘米",C:"开启危险报警闪光灯",D:"以上都是"},ans:"B",hint:"📌 临时停车核心：顺行方向+距路缘≤30cm。逆向停车是违章的，但不是临时停车的"首要规定"。"},
+  {id:70,tag:"标志",q:"🔴 红圈 + 🔢\"80\" + 黑斜杠 → 这个标志含义是？",opts:{A:"最低限速80",B:"最高限速80",C:"解除限速80",D:"建议速度80"},ans:"C",hint:"📌 黑圈+数字+斜杠=解除限速。红圈+数字=最高限速，蓝圈+数字=最低限速，黑圈+数字+斜杠=解除前面的限速。"}
+];
+
+let userAnswers = {};
+let currentIdx = 0;
+let hasSubmitted = false;
+let timerInterval;
+let secondsLeft = 20 * 60;
+
+function getTagClass(tag) {
+  if (tag === '标志') return 'tag-sign';
+  if (tag === '记分') return 'tag-rule';
+  if (tag === '限速') return 'tag-speed';
+  return 'tag-light';
+}
+
+function renderSheet() {
+  const grid = document.getElementById('sheet-grid');
+  grid.innerHTML = questions.map((q, i) => {
+    let cls = 'sheet-item';
+    if (i === currentIdx) cls += ' current';
+    if (userAnswers[q.id]) cls += ' answered';
+    if (hasSubmitted) {
+      if (userAnswers[q.id] === q.ans) cls += ' correct';
+      else if (userAnswers[q.id]) cls += ' incorrect';
+    }
+    return `<div class="${cls}" onclick="goToQ(${i})">${q.id}</div>`;
+  }).join('');
+  const answered = Object.keys(userAnswers).length;
+  document.getElementById('sheet-progress').innerText = `${answered} / ${questions.length}`;
+}
+
+function loadQ(idx) {
+  currentIdx = idx;
+  const q = questions[idx];
+  document.getElementById('q-num').innerHTML = `第 ${idx+1} 题 <span class="q-tag ${getTagClass(q.tag)}">${q.tag}</span>`;
+  document.getElementById('q-text').innerText = q.question;
+  const optsDiv = document.getElementById('q-opts');
+  optsDiv.innerHTML = Object.entries(q.opts).map(([k,v]) => {
+    let cls = 'opt';
+    if (userAnswers[q.id] === k) cls += ' selected';
+    if (hasSubmitted) {
+      if (k === q.ans) cls += ' correct';
+      else if (userAnswers[q.id] === k) cls += ' incorrect';
+    }
+    return `<div class="${cls}" onclick="${hasSubmitted ? '' : `selectAnswer(${q.id},'${k}')`}">
+      <span class="opt-letter">${k}</span><span>${v}</span>
+    </div>`;
+  }).join('');
+  
+  const hintDiv = document.getElementById('q-hint');
+  if (hasSubmitted) {
+    hintDiv.innerHTML = `<strong>💡 解析：</strong>${q.hint}`;
+    hintDiv.classList.add('show');
+  } else {
+    hintDiv.classList.remove('show');
+  }
+  
+  renderSheet();
+}
+
+function selectAnswer(qid, ans) {
+  if (hasSubmitted) return;
+  userAnswers[qid] = userAnswers[qid] === ans ? undefined : ans;
+  loadQ(currentIdx);
+}
+
+function prevQ() { if (currentIdx > 0) loadQ(currentIdx - 1); }
+function nextQ() { if (currentIdx < questions.length - 1) loadQ(currentIdx + 1); }
+function goToQ(i) { loadQ(i); }
+
+function submitExam() {
+  if (hasSubmitted) return;
+  clearInterval(timerInterval);
+  hasSubmitted = true;
+  
+  const correct = questions.filter(q => userAnswers[q.id] === q.ans).length;
+  const wrong = questions.filter(q => userAnswers[q.id] && userAnswers[q.id] !== q.ans).length;
+  const unanswered = questions.length - correct - wrong;
+  const score = correct * 5;
+  
+  const modal = document.getElementById('result-modal');
+  document.getElementById('result-score').innerText = score;
+  document.getElementById('result-score-circle').style.borderColor = score >= 90 ? 'var(--success)' : 'var(--error)';
+  
+  if (score >= 90) {
+    document.getElementById('result-status-text').innerText = '✅ 合格';
+    document.getElementById('result-status-text').className = 'result-status status-pass';
+    document.getElementById('result-stat-details').innerText = `答对 ${correct} 题，答错 ${wrong} 题，未答 ${unanswered} 题。恭喜通过！`;
+  } else {
+    document.getElementById('result-status-text').innerText = '❌ 未合格';
+    document.getElementById('result-status-text').className = 'result-status status-fail';
+    document.getElementById('result-stat-details').innerText = `答对 ${correct} 题，答错 ${wrong} 题，未答 ${unanswered} 题。再接再厉！`;
+  }
+  
+  document.getElementById('btn-submit').style.display = 'none';
+  modal.style.display = 'flex';
+  loadQ(currentIdx);
+  renderSheet();
+}
+
+function closeModal() { document.getElementById('result-modal').style.display = 'none'; }
+
+function copyReport() {
+  const correct = questions.filter(q => userAnswers[q.id] === q.ans).length;
+  const wrongQs = questions.filter(q => userAnswers[q.id] && userAnswers[q.id] !== q.ans);
+  const unanswered = questions.filter(q => !userAnswers[q.id]);
+  const score = correct * 5;
+  const now = new Date();
+  const ds = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  
+  let r = '📊 科目一成绩 · 综合专项 (51-70题)\\n';
+  r += '交卷时间: '+ds+'\\n';
+  r += '分数: '+score+' | 合格线: 90 | '+(score>=90?'✅ 合格':'❌ 未合格')+'\\n';
+  r += '答对: '+correct+' | 答错: '+wrongQs.length+' | 未答: '+unanswered.length+'\\n';
+  if (wrongQs.length) {
+    r += '\\n错题:\\n';
+    wrongQs.forEach(q => {
+      r += '  Q'+q.id+'(错选'+userAnswers[q.id]+'→应为'+q.ans+') '+q.opts[q.ans]+'\\n';
+    });
+  }
+  if (unanswered.length) r += '\\n未答: '+unanswered.map(q=>'Q'+q.id).join(', ')+'\\n';
+  r += '\\n---\\n来自: Hermes 驾考助手\\n发给 Wing 即可自动更新错题本';
+  
+  navigator.clipboard.writeText(r).then(()=>{
+    const btn=event.target; const o=btn.innerText;
+    btn.innerText='✅ 已复制！发给 Wing'; btn.style.background='#059669';
+    setTimeout(()=>{btn.innerText=o;btn.style.background='#10b981';},2000);
+  }).catch(()=>alert('复制失败'));
+}
+
+function resetExam() {
+  userAnswers = {}; currentIdx = 0; hasSubmitted = false;
+  secondsLeft = 20 * 60;
+  document.getElementById('btn-submit').style.display = '';
+  document.getElementById('result-modal').style.display = 'none';
+  loadQ(0);
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (secondsLeft <= 0) { clearInterval(timerInterval); submitExam(); return; }
+    secondsLeft--;
+    const m = Math.floor(secondsLeft/60), s = secondsLeft%60;
+    document.getElementById('timer').innerText = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }, 1000);
+}
+
+loadQ(0);
+startTimer();
+</script>
+</body>
+</html>
