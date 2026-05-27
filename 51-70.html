@@ -213,7 +213,7 @@ function loadQ(idx) {
   currentIdx = idx;
   const q = questions[idx];
   document.getElementById('q-num').innerHTML = `第 ${idx+1} 题 <span class="q-tag ${getTagClass(q.tag)}">${q.tag}</span>`;
-  document.getElementById('q-text').innerText = q.question;
+  document.getElementById('q-text').innerText = q.q;
   const optsDiv = document.getElementById('q-opts');
   optsDiv.innerHTML = Object.entries(q.opts).map(([k,v]) => {
     let cls = 'opt';
